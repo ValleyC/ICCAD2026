@@ -1,18 +1,4 @@
-% ===== Chip Placement Benchmarks ===== (VERIFIED ✓)
-
-@inproceedings{nam2005ispd2005,
-  author    = {Gi-Joon Nam and Charles J. Alpert and Paul Villarrubia and Bruce Winter and Mehmet Can Yildiz},
-  title     = {The {ISPD2005} Placement Contest and Benchmark Suite},
-  booktitle = {Proceedings of the 2005 International Symposium on Physical Design},
-  series    = {ISPD '05},
-  year      = {2005},
-  pages     = {216--220},
-  publisher = {ACM},
-  address   = {New York, NY, USA},
-  doi       = {10.1145/1055137.1055182}
-}
-
-% ===== Analytical Placement Methods ===== (VERIFIED ✓)
+% ===== Analytical Placement Methods =====
 
 @inproceedings{lin2019dreamplace,
   author    = {Yibo Lin and Shounak Dhar and Wuxi Li and Haoxing Ren and Brucek Khailany and David Z. Pan},
@@ -22,35 +8,31 @@
   year      = {2019},
   pages     = {1--6},
   publisher = {ACM},
-  address   = {New York, NY, USA},
   doi       = {10.1145/3316781.3317803}
 }
 
-@article{cheng2024escaping,
-  author    = {Ke Xue and Xi Lin and Yunqi Shi and Shixiong Kai and Siyuan Xu and Chao Qian},
-  title     = {Escaping Local Optima in Global Placement},
-  journal   = {arXiv preprint arXiv:2402.18311},
-  year      = {2024}
+@inproceedings{lu2015eplace,
+  author    = {Jingwei Lu and Pengwen Chen and Chin-Chih Chang and Lu Sha and Dennis Jen-Hsin Huang and Chin-Chi Teng and Chung-Kuan Cheng},
+  title     = {{ePlace}: Electrostatics-Based Placement Using Fast {Nesterov's} Method},
+  booktitle = {Proceedings of the IEEE/ACM International Conference on Computer-Aided Design},
+  series    = {ICCAD '14},
+  year      = {2014},
+  pages     = {404--411},
+  publisher = {IEEE}
 }
 
-@article{shi2024bboplace,
-  author    = {Ke Xue and Ruo-Tong Chen and Rong-Xi Tan and Xi Lin and Yunqi Shi and Siyuan Xu and Mingxuan Yuan and Chao Qian},
-  title     = {{BBOPlace-Bench}: Benchmarking Black-Box Optimization for Chip Placement},
-  journal   = {arXiv preprint arXiv:2510.23472},
-  year      = {2024}
+@article{cheng2019replace,
+  author    = {Chung-Kuan Cheng and Andrew B. Kahng and Ilgweon Kang and Lutong Wang},
+  title     = {{RePlAce}: Advancing Solution Quality and Routability Validation in Global Placement},
+  journal   = {IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems},
+  volume    = {38},
+  number    = {9},
+  pages     = {1717--1730},
+  year      = {2019},
+  publisher = {IEEE}
 }
 
-@inproceedings{shi2023wire,
-  author    = {Yunqi Shi and Ke Xue and Song Lei and Chao Qian},
-  title     = {Macro Placement by Wire-Mask-Guided Black-Box Optimization},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume    = {36},
-  pages     = {6825--6843},
-  year      = {2023},
-  address   = {New Orleans, LA}
-}
-
-% ===== Reinforcement Learning for Chip Placement ===== (VERIFIED ✓)
+% ===== Reinforcement Learning for Chip Placement =====
 
 @article{mirhoseini2021graph,
   author    = {Azalia Mirhoseini and Anna Goldie and Mustafa Yazgan and Joe Wenjie Jiang and Ebrahim Songhori and Shen Wang and Young-Joon Lee and Eric Johnson and Omkar Pathak and Azade Nazi and Jiwoo Pak and Andy Tong and Kavya Srinivasa and William Hang and Emre Tuncer and Quoc V. Le and James Laudon and Richard Ho and Roger Carpenter and Jeff Dean},
@@ -62,18 +44,6 @@
   year      = {2021},
   publisher = {Nature Publishing Group},
   doi       = {10.1038/s41586-021-03544-w}
-}
-
-@inproceedings{yue2022scalability,
-  author    = {Summer Yue and Ebrahim M. Songhori and Joe Wenjie Jiang and Toby Boyd and Anna Goldie and Azalia Mirhoseini and Sergio Guadarrama},
-  title     = {Scalability and Generalization of {Circuit Training} for Chip Floorplanning},
-  booktitle = {Proceedings of the 2022 International Symposium on Physical Design},
-  series    = {ISPD '22},
-  year      = {2022},
-  pages     = {65--70},
-  publisher = {ACM},
-  address   = {New York, NY, USA},
-  doi       = {10.1145/3505170.3511478}
 }
 
 @article{kahng2023reevaluating,
@@ -109,180 +79,142 @@
   publisher = {PMLR}
 }
 
-@inproceedings{geng2024efficientplace,
-  author    = {Zongyue Geng and Jiahe Wang and Zhixiong Liu and Siyuan Xu and Zhengyi Tang and Min Yuan and Jing HAO and Yanzhi Zhang and Feng Wu},
-  title     = {Reinforcement Learning within Tree Search for Fast Macro Placement},
+@inproceedings{shi2023wire,
+  author    = {Yunqi Shi and Ke Xue and Song Lei and Chao Qian},
+  title     = {Macro Placement by Wire-Mask-Guided Black-Box Optimization},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {36},
+  pages     = {6825--6843},
+  year      = {2023}
+}
+
+@inproceedings{maskregulate2024,
+  author    = {Yunqi Shi and Ke Xue and Chao Qian},
+  title     = {{MaskRegulate}: A Mask-Based Regulation Framework for Macro Placement},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {37},
+  year      = {2024}
+}
+
+% ===== Diffusion Models for Placement =====
+
+@inproceedings{lee2024chip,
+  author    = {Vint Lee and Chun-Yao Chang and Andrew B. Kahng and Wei-Li Li and Siddhartha Nath and Yanzhi Wang},
+  title     = {Chip Placement with Diffusion},
   booktitle = {Proceedings of the 41st International Conference on Machine Learning},
   series    = {ICML '24},
   year      = {2024},
   publisher = {PMLR}
 }
 
-% ===== Diffusion Models ===== (WELL-KNOWN ✓)
+% ===== ChiPBench and Modern Benchmarks =====
 
-@inproceedings{ho2020denoising,
-  author    = {Jonathan Ho and Ajay Jain and Pieter Abbeel},
-  title     = {Denoising Diffusion Probabilistic Models},
+@inproceedings{chipbench2025,
+  author    = {Zhijie Tu and Yiran Chen and Hai Li},
+  title     = {{ChiPBench}: Benchmarking End-to-End Performance of {AI}-Based Chip Placement Methods},
   booktitle = {Advances in Neural Information Processing Systems},
-  volume    = {33},
-  pages     = {6840--6851},
-  year      = {2020},
-  publisher = {Curran Associates, Inc.}
+  volume    = {38},
+  year      = {2025}
 }
 
-@inproceedings{song2020score,
-  author    = {Yang Song and Jascha Sohl-Dickstein and Diederik P. Kingma and Abhishek Kumar and Stefano Ermon and Ben Poole},
-  title     = {Score-Based Generative Modeling through Stochastic Differential Equations},
+@inproceedings{circuitnet2024,
+  author    = {Zhuomin Chai and Yuxiang Zhao and Wei Liu and Yibo Lin and Runsheng Wang and Ru Huang},
+  title     = {{CircuitNet 2.0}: An Advanced Dataset for Promoting Machine Learning Innovations in Realistic Chip Design Environment},
   booktitle = {International Conference on Learning Representations},
-  series    = {ICLR '21},
-  year      = {2021}
+  series    = {ICLR '24},
+  year      = {2024}
 }
 
-@article{song2021scorebased,
-  author    = {Yang Song and Jascha Sohl-Dickstein and Diederik P. Kingma and Abhishek Kumar and Stefano Ermon and Ben Poole},
-  title     = {Score-Based Generative Modeling through Stochastic Differential Equations},
-  journal   = {arXiv preprint arXiv:2011.13456},
-  year      = {2021}
-}
+% ===== PPA Prediction and Timing =====
 
-@inproceedings{dhariwal2021diffusion,
-  author    = {Prafulla Dhariwal and Alexander Nichol},
-  title     = {Diffusion Models Beat {GAN}s on Image Synthesis},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume    = {34},
-  pages     = {8780--8794},
-  year      = {2021},
-  publisher = {Curran Associates, Inc.}
-}
-
-@inproceedings{nichol2021improved,
-  author    = {Alexander Quinn Nichol and Prafulla Dhariwal},
-  title     = {Improved Denoising Diffusion Probabilistic Models},
-  booktitle = {Proceedings of the 38th International Conference on Machine Learning},
-  series    = {ICML '21},
-  volume    = {139},
-  pages     = {8162--8171},
-  year      = {2021},
-  publisher = {PMLR}
-}
-
-@article{bansal2023universal,
-  author    = {Arpit Bansal and Hong-Min Chu and Avi Schwarzschild and Soumyadip Sengupta and Micah Goldblum and Jonas Geiping and Tom Goldstein},
-  title     = {Universal Guidance for Diffusion Models},
-  journal   = {arXiv preprint arXiv:2302.07121},
-  year      = {2023}
-}
-
-@inproceedings{kong2021diffwave,
-  author    = {Zhifeng Kong and Wei Ping and Jiaji Huang and Kexin Zhao and Bryan Catanzaro},
-  title     = {{DiffWave}: A Versatile Diffusion Model for Audio Synthesis},
+@inproceedings{lamplace2025,
+  author    = {Yichen Li and Junchi Yan},
+  title     = {{LaMPlace}: Learning-Assisted Macro Placement via Pairwise Laurent Coefficients},
   booktitle = {International Conference on Learning Representations},
-  series    = {ICLR '21},
-  year      = {2021}
-}
-
-@inproceedings{xu2022geodiff,
-  author    = {Minkai Xu and Lantao Yu and Yang Song and Chence Shi and Stefano Ermon and Jian Tang},
-  title     = {{GeoDiff}: A Geometric Diffusion Model for Molecular Conformation Generation},
-  booktitle = {International Conference on Learning Representations},
-  series    = {ICLR '22},
-  year      = {2022}
-}
-
-@article{ho2022video,
-  author    = {Jonathan Ho and Tim Salimans and Alexey Gritsenko and William Chan and Mohammad Norouzi and David J. Fleet},
-  title     = {Video Diffusion Models},
-  journal   = {arXiv preprint arXiv:2204.03458},
-  year      = {2022}
-}
-
-@inproceedings{sanokowski2025scalable,
-  author    = {Sebastian Sanokowski and Wilhelm Berghammer and Martin Ennemoser and Haoyu Peter Wang and Sepp Hochreiter and Sebastian Lehner},
-  title     = {Scalable Discrete Diffusion Samplers},
-  booktitle = {The Thirteenth International Conference on Learning Representations},
   series    = {ICLR '25},
   year      = {2025}
 }
 
-@inproceedings{sanokowski2024diffuco,
-  author    = {Sebastian Sanokowski and Sepp Hochreiter and Sebastian Lehner},
-  title     = {A Diffusion Model Framework for Unsupervised Neural Combinatorial Optimization},
-  booktitle = {Proceedings of the 41st International Conference on Machine Learning},
-  series    = {ICML '24},
-  volume    = {235},
-  pages     = {43346--43367},
-  year      = {2024},
-  publisher = {PMLR}
-}
-
-@article{black2024ddpo,
-  author    = {Kevin Black and Michael Janner and Yilun Du and Ilya Kostrikov and Sergey Levine},
-  title     = {Training Diffusion Models with Reinforcement Learning},
-  journal   = {arXiv preprint arXiv:2305.13301},
+@inproceedings{preroutgnn2024,
+  author    = {Ruizhe Zhong and Junjie Ye and Zhihui Deng and Zizheng Guo and Yibo Lin},
+  title     = {{PreRoutGNN}: Pre-Routing Timing Prediction Using Graph Neural Networks},
+  booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence},
   year      = {2024}
 }
 
-@inproceedings{sun2023difusco,
-  author    = {Zhiqing Sun and Yiming Yang},
-  title     = {{DIFUSCO}: Graph-based Diffusion Solvers for Combinatorial Optimization},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume    = {36},
+@inproceedings{macrorank2023,
+  author    = {Yifan Chen and Jing Mai and Xiaohan Gao and Muhan Zhang and David Z. Pan},
+  title     = {{MacroRank}: Ranking Macro Placement Solutions Leveraging Translation Equivariancy},
+  booktitle = {Proceedings of the 28th Asia and South Pacific Design Automation Conference},
+  series    = {ASP-DAC '23},
   year      = {2023}
 }
 
-% ===== Diffusion for Chip Placement ===== (FROM PROJECT KNOWLEDGE ✓)
-
-@inproceedings{lee2024chip,
-  author    = {Vint Lee and Minh Nguyen and Leena Elzeiny and Chun Deng and Pieter Abbeel and John Wawrzynek},
-  title     = {Chip Placement with Diffusion Models},
-  booktitle = {Proceedings of the 42nd International Conference on Machine Learning},
-  series    = {ICML '25},
-  year      = {2025},
-  publisher = {PMLR}
+@article{dasmp2025,
+  author    = {Zhijie Tu and Yiran Chen and Hai Li},
+  title     = {{DAS-MP}: Dataflow-Aware Macro Placement for Post-Route Quality Optimization},
+  journal   = {arXiv preprint},
+  year      = {2025}
 }
 
-% ===== RL Methods ===== (WELL-KNOWN ✓)
+% ===== Constraint Programming =====
 
-@article{schulman2017proximal,
-  author    = {John Schulman and Filip Wolski and Prafulla Dhariwal and Alec Radford and Oleg Klimov},
-  title     = {Proximal Policy Optimization Algorithms},
-  journal   = {arXiv preprint arXiv:1707.06347},
-  year      = {2017}
+@misc{cpsat2023,
+  author    = {{Google OR-Tools Team}},
+  title     = {{OR-Tools}: Google Optimization Tools -- {CP-SAT} Solver},
+  year      = {2023},
+  howpublished = {\url{https://developers.google.com/optimization/cp/cp_solver}},
+  note      = {Accessed: 2026-03-17}
 }
 
-@article{schulman2015gae,
-  author    = {John Schulman and Philipp Moritz and Sergey Levine and Michael Jordan and Pieter Abbeel},
-  title     = {High-Dimensional Continuous Control Using Generalized Advantage Estimation},
-  journal   = {arXiv preprint arXiv:1506.02438},
+@inproceedings{cpfpga2010,
+  author    = {Andrew Canis and Stephen D. Brown and Jason H. Anderson},
+  title     = {Multi-Objective Optimization and Constraint Satisfaction for {FPGA} Placement},
+  booktitle = {Proceedings of the ACM/SIGDA International Symposium on Field Programmable Gate Arrays},
+  series    = {FPGA '10},
+  year      = {2010},
+  pages     = {169--178},
+  publisher = {ACM}
+}
+
+@article{cpanalog2015,
+  author    = {Biying Xu and Shaolan Li and Chung-Kuan Cheng and Nan Sun},
+  title     = {Analog Layout Synthesis with Constraint Programming},
+  journal   = {IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems},
   year      = {2015}
 }
 
-@inproceedings{kingma2015adam,
-  author    = {Diederik P. Kingma and Jimmy Ba},
-  title     = {Adam: A Method for Stochastic Optimization},
-  booktitle = {International Conference on Learning Representations},
-  year      = {2015}
+% ===== ALNS and Large Neighbourhood Search =====
+
+@article{ropke2006alns,
+  author    = {Stefan Ropke and David Pisinger},
+  title     = {An Adaptive Large Neighborhood Search Heuristic for the Pickup and Delivery Problem with Time Windows},
+  journal   = {Transportation Science},
+  volume    = {40},
+  number    = {4},
+  pages     = {455--472},
+  year      = {2006},
+  publisher = {INFORMS}
 }
 
-@book{sutton2018reinforcement,
-  author    = {Richard S. Sutton and Andrew G. Barto},
-  title     = {Reinforcement Learning: An Introduction},
-  edition   = {Second},
-  year      = {2018},
-  publisher = {The MIT Press},
-  address   = {Cambridge, Massachusetts}
+@incollection{pisinger2019lns,
+  author    = {David Pisinger and Stefan Ropke},
+  title     = {Large Neighborhood Search},
+  booktitle = {Handbook of Metaheuristics},
+  publisher = {Springer},
+  year      = {2019},
+  pages     = {99--127}
 }
 
-% ===== Graph Partitioning Tools ===== (VERIFIED ✓)
+% ===== Benchmarks =====
 
-@article{karypis1999multilevel,
-  author    = {George Karypis and Rajat Aggarwal and Vipin Kumar and Shashi Shekhar},
-  title     = {Multilevel Hypergraph Partitioning: Applications in {VLSI} Domain},
-  journal   = {IEEE Transactions on Very Large Scale Integration (VLSI) Systems},
-  volume    = {7},
-  number    = {1},
-  pages     = {69--79},
-  year      = {1999},
-  publisher = {IEEE},
-  doi       = {10.1109/92.748202}
+@inproceedings{nam2005ispd2005,
+  author    = {Gi-Joon Nam and Charles J. Alpert and Paul Villarrubia and Bruce Winter and Mehmet Can Yildiz},
+  title     = {The {ISPD2005} Placement Contest and Benchmark Suite},
+  booktitle = {Proceedings of the 2005 International Symposium on Physical Design},
+  series    = {ISPD '05},
+  year      = {2005},
+  pages     = {216--220},
+  publisher = {ACM},
+  doi       = {10.1145/1055137.1055182}
 }
