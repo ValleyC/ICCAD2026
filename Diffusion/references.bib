@@ -1,79 +1,32 @@
-% ===== Chip Placement Benchmarks ===== (VERIFIED ✓)
-
-@inproceedings{nam2005ispd2005,
-  author    = {Gi-Joon Nam and Charles J. Alpert and Paul Villarrubia and Bruce Winter and Mehmet Can Yildiz},
-  title     = {The {ISPD2005} Placement Contest and Benchmark Suite},
-  booktitle = {Proceedings of the 2005 International Symposium on Physical Design},
-  series    = {ISPD '05},
-  year      = {2005},
-  pages     = {216--220},
-  publisher = {ACM},
-  address   = {New York, NY, USA},
-  doi       = {10.1145/1055137.1055182}
-}
-
-% ===== Analytical Placement Methods ===== (VERIFIED ✓)
+% ===== Analytical Placement =====
 
 @inproceedings{lin2019dreamplace,
   author    = {Yibo Lin and Shounak Dhar and Wuxi Li and Haoxing Ren and Brucek Khailany and David Z. Pan},
   title     = {{DREAMPlace}: Deep Learning Toolkit-Enabled {GPU} Acceleration for Modern {VLSI} Placement},
-  booktitle = {Proceedings of the 56th Annual Design Automation Conference},
-  series    = {DAC '19},
+  booktitle = {Proc. Design Automation Conf. (DAC)},
   year      = {2019},
   pages     = {1--6},
-  publisher = {ACM},
-  address   = {New York, NY, USA},
-  doi       = {10.1145/3316781.3317803}
+  publisher = {ACM}
 }
 
-@article{cheng2024escaping,
-  author    = {Ke Xue and Xi Lin and Yunqi Shi and Shixiong Kai and Siyuan Xu and Chao Qian},
-  title     = {Escaping Local Optima in Global Placement},
-  journal   = {arXiv preprint arXiv:2402.18311},
-  year      = {2024}
-}
-
-@article{shi2024bboplace,
-  author    = {Ke Xue and Ruo-Tong Chen and Rong-Xi Tan and Xi Lin and Yunqi Shi and Siyuan Xu and Mingxuan Yuan and Chao Qian},
-  title     = {{BBOPlace-Bench}: Benchmarking Black-Box Optimization for Chip Placement},
-  journal   = {arXiv preprint arXiv:2510.23472},
-  year      = {2024}
-}
-
-@inproceedings{shi2023wire,
-  author    = {Yunqi Shi and Ke Xue and Song Lei and Chao Qian},
-  title     = {Macro Placement by Wire-Mask-Guided Black-Box Optimization},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume    = {36},
-  pages     = {6825--6843},
+@inproceedings{autodmp2023,
+  author    = {Anthony Agnesina and Puranjay Rajvanshi and Tian Yang and Geraldo Pradipta and Austin Jiao and Ben Keller and Brucek Khailany and Haoxing Ren},
+  title     = {{AutoDMP}: Automated {DREAMPlace}-based Macro Placement},
+  booktitle = {Proc. Int. Symp. Physical Design (ISPD)},
   year      = {2023},
-  address   = {New Orleans, LA}
+  pages     = {149--157}
 }
 
-% ===== Reinforcement Learning for Chip Placement ===== (VERIFIED ✓)
+% ===== AI Placement =====
 
 @article{mirhoseini2021graph,
-  author    = {Azalia Mirhoseini and Anna Goldie and Mustafa Yazgan and Joe Wenjie Jiang and Ebrahim Songhori and Shen Wang and Young-Joon Lee and Eric Johnson and Omkar Pathak and Azade Nazi and Jiwoo Pak and Andy Tong and Kavya Srinivasa and William Hang and Emre Tuncer and Quoc V. Le and James Laudon and Richard Ho and Roger Carpenter and Jeff Dean},
+  author    = {Azalia Mirhoseini and Anna Goldie and others},
   title     = {A Graph Placement Methodology for Fast Chip Design},
   journal   = {Nature},
   volume    = {594},
   number    = {7862},
   pages     = {207--212},
-  year      = {2021},
-  publisher = {Nature Publishing Group},
-  doi       = {10.1038/s41586-021-03544-w}
-}
-
-@inproceedings{yue2022scalability,
-  author    = {Summer Yue and Ebrahim M. Songhori and Joe Wenjie Jiang and Toby Boyd and Anna Goldie and Azalia Mirhoseini and Sergio Guadarrama},
-  title     = {Scalability and Generalization of {Circuit Training} for Chip Floorplanning},
-  booktitle = {Proceedings of the 2022 International Symposium on Physical Design},
-  series    = {ISPD '22},
-  year      = {2022},
-  pages     = {65--70},
-  publisher = {ACM},
-  address   = {New York, NY, USA},
-  doi       = {10.1145/3505170.3511478}
+  year      = {2021}
 }
 
 @article{kahng2023reevaluating,
@@ -83,206 +36,148 @@
   volume    = {67},
   number    = {11},
   pages     = {60--71},
-  year      = {2024},
-  publisher = {ACM},
-  doi       = {10.1145/3676845}
+  year      = {2024}
 }
 
 @inproceedings{lai2022maskplace,
   author    = {Yao Lai and Yongqi Mu and Ping Luo},
   title     = {{MaskPlace}: Fast Chip Placement via Reinforced Visual Representation Learning},
-  booktitle = {Advances in Neural Information Processing Systems},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
   volume    = {35},
   pages     = {24019--24030},
-  year      = {2022},
-  publisher = {Curran Associates, Inc.}
+  year      = {2022}
 }
 
 @inproceedings{lai2023chipformer,
   author    = {Yao Lai and Jinxin Liu and Zhentao Tang and Bin Wang and Jianye Hao and Ping Luo},
   title     = {{ChiPFormer}: Transferable Chip Placement via Offline Decision Transformer},
-  booktitle = {Proceedings of the 40th International Conference on Machine Learning},
-  series    = {ICML '23},
+  booktitle = {Proc. Int. Conf. Machine Learning (ICML)},
   volume    = {202},
   pages     = {18346--18364},
-  year      = {2023},
-  publisher = {PMLR}
-}
-
-@inproceedings{geng2024efficientplace,
-  author    = {Zongyue Geng and Jiahe Wang and Zhixiong Liu and Siyuan Xu and Zhengyi Tang and Min Yuan and Jing HAO and Yanzhi Zhang and Feng Wu},
-  title     = {Reinforcement Learning within Tree Search for Fast Macro Placement},
-  booktitle = {Proceedings of the 41st International Conference on Machine Learning},
-  series    = {ICML '24},
-  year      = {2024},
-  publisher = {PMLR}
-}
-
-% ===== Diffusion Models ===== (WELL-KNOWN ✓)
-
-@inproceedings{ho2020denoising,
-  author    = {Jonathan Ho and Ajay Jain and Pieter Abbeel},
-  title     = {Denoising Diffusion Probabilistic Models},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume    = {33},
-  pages     = {6840--6851},
-  year      = {2020},
-  publisher = {Curran Associates, Inc.}
-}
-
-@inproceedings{song2020score,
-  author    = {Yang Song and Jascha Sohl-Dickstein and Diederik P. Kingma and Abhishek Kumar and Stefano Ermon and Ben Poole},
-  title     = {Score-Based Generative Modeling through Stochastic Differential Equations},
-  booktitle = {International Conference on Learning Representations},
-  series    = {ICLR '21},
-  year      = {2021}
-}
-
-@article{song2021scorebased,
-  author    = {Yang Song and Jascha Sohl-Dickstein and Diederik P. Kingma and Abhishek Kumar and Stefano Ermon and Ben Poole},
-  title     = {Score-Based Generative Modeling through Stochastic Differential Equations},
-  journal   = {arXiv preprint arXiv:2011.13456},
-  year      = {2021}
-}
-
-@inproceedings{dhariwal2021diffusion,
-  author    = {Prafulla Dhariwal and Alexander Nichol},
-  title     = {Diffusion Models Beat {GAN}s on Image Synthesis},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume    = {34},
-  pages     = {8780--8794},
-  year      = {2021},
-  publisher = {Curran Associates, Inc.}
-}
-
-@inproceedings{nichol2021improved,
-  author    = {Alexander Quinn Nichol and Prafulla Dhariwal},
-  title     = {Improved Denoising Diffusion Probabilistic Models},
-  booktitle = {Proceedings of the 38th International Conference on Machine Learning},
-  series    = {ICML '21},
-  volume    = {139},
-  pages     = {8162--8171},
-  year      = {2021},
-  publisher = {PMLR}
-}
-
-@article{bansal2023universal,
-  author    = {Arpit Bansal and Hong-Min Chu and Avi Schwarzschild and Soumyadip Sengupta and Micah Goldblum and Jonas Geiping and Tom Goldstein},
-  title     = {Universal Guidance for Diffusion Models},
-  journal   = {arXiv preprint arXiv:2302.07121},
   year      = {2023}
 }
 
-@inproceedings{kong2021diffwave,
-  author    = {Zhifeng Kong and Wei Ping and Jiaji Huang and Kexin Zhao and Bryan Catanzaro},
-  title     = {{DiffWave}: A Versatile Diffusion Model for Audio Synthesis},
-  booktitle = {International Conference on Learning Representations},
-  series    = {ICLR '21},
-  year      = {2021}
+@inproceedings{shi2023wire,
+  author    = {Yunqi Shi and Ke Xue and Song Lei and Chao Qian},
+  title     = {Macro Placement by Wire-Mask-Guided Black-Box Optimization},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {36},
+  pages     = {6825--6843},
+  year      = {2023}
 }
 
-@inproceedings{xu2022geodiff,
-  author    = {Minkai Xu and Lantao Yu and Yang Song and Chence Shi and Stefano Ermon and Jian Tang},
-  title     = {{GeoDiff}: A Geometric Diffusion Model for Molecular Conformation Generation},
-  booktitle = {International Conference on Learning Representations},
-  series    = {ICLR '22},
-  year      = {2022}
+@inproceedings{maskregulate2024,
+  author    = {Yunqi Shi and Ke Xue and Chao Qian},
+  title     = {{MaskRegulate}: A Mask-Based Regulation Framework for Macro Placement},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {37},
+  year      = {2024}
 }
 
-@article{ho2022video,
-  author    = {Jonathan Ho and Tim Salimans and Alexey Gritsenko and William Chan and Mohammad Norouzi and David J. Fleet},
-  title     = {Video Diffusion Models},
-  journal   = {arXiv preprint arXiv:2204.03458},
-  year      = {2022}
+@inproceedings{efficientplace2024,
+  author    = {Zongyue Geng and Jiahe Wang and Zhixiong Liu and others},
+  title     = {Reinforcement Learning within Tree Search for Fast Macro Placement},
+  booktitle = {Proc. Int. Conf. Machine Learning (ICML)},
+  year      = {2024}
 }
 
-@inproceedings{sanokowski2025scalable,
-  author    = {Sebastian Sanokowski and Wilhelm Berghammer and Martin Ennemoser and Haoyu Peter Wang and Sepp Hochreiter and Sebastian Lehner},
-  title     = {Scalable Discrete Diffusion Samplers},
-  booktitle = {The Thirteenth International Conference on Learning Representations},
-  series    = {ICLR '25},
+% ===== Diffusion for Placement =====
+
+@inproceedings{lee2024chip,
+  author    = {Vint Lee and Minh Nguyen and Leena Elzeiny and Chun Deng and Pieter Abbeel and John Wawrzynek},
+  title     = {Chip Placement with Diffusion Models},
+  booktitle = {Proc. Int. Conf. Machine Learning (ICML)},
   year      = {2025}
+}
+
+@misc{chen2026dac,
+  author    = {Ruogu Chen and Jie Han},
+  title     = {Energy-Guided Continuous Diffusion for Chip Placement},
+  howpublished = {arXiv preprint},
+  year      = {2026},
+  note      = {Under review}
+}
+
+% ===== RL for Diffusion =====
+
+@misc{black2024rl,
+  author    = {Kevin Black and Michael Janner and Yilun Du and Ilya Kostrikov and Sergey Levine},
+  title     = {Training Diffusion Models with Reinforcement Learning},
+  howpublished = {arXiv preprint arXiv:2305.13301},
+  year      = {2024}
 }
 
 @inproceedings{sanokowski2024diffuco,
   author    = {Sebastian Sanokowski and Sepp Hochreiter and Sebastian Lehner},
   title     = {A Diffusion Model Framework for Unsupervised Neural Combinatorial Optimization},
-  booktitle = {Proceedings of the 41st International Conference on Machine Learning},
-  series    = {ICML '24},
+  booktitle = {Proc. Int. Conf. Machine Learning (ICML)},
   volume    = {235},
   pages     = {43346--43367},
-  year      = {2024},
-  publisher = {PMLR}
-}
-
-@article{black2024ddpo,
-  author    = {Kevin Black and Michael Janner and Yilun Du and Ilya Kostrikov and Sergey Levine},
-  title     = {Training Diffusion Models with Reinforcement Learning},
-  journal   = {arXiv preprint arXiv:2305.13301},
   year      = {2024}
 }
 
-@inproceedings{sun2023difusco,
-  author    = {Zhiqing Sun and Yiming Yang},
-  title     = {{DIFUSCO}: Graph-based Diffusion Solvers for Combinatorial Optimization},
-  booktitle = {Advances in Neural Information Processing Systems},
-  volume    = {36},
+@inproceedings{sanokowski2025sdds,
+  author    = {Sebastian Sanokowski and Wilhelm Berghammer and Martin Ennemoser and Haoyu Peter Wang and Sepp Hochreiter and Sebastian Lehner},
+  title     = {Scalable Discrete Diffusion Samplers},
+  booktitle = {Int. Conf. Learning Representations (ICLR)},
+  year      = {2025}
+}
+
+% ===== PPA Prediction =====
+
+@inproceedings{lamplace2025,
+  author    = {Yichen Li and Junchi Yan},
+  title     = {{LaMPlace}: Learning-Assisted Macro Placement via Pairwise Laurent Coefficients},
+  booktitle = {Int. Conf. Learning Representations (ICLR)},
+  year      = {2025}
+}
+
+@inproceedings{preroutgnn2024,
+  author    = {Ruizhe Zhong and Junjie Ye and Zhihui Deng and Zizheng Guo and Yibo Lin},
+  title     = {{PreRoutGNN}: Pre-Routing Timing Prediction Using Graph Neural Networks},
+  booktitle = {Proc. AAAI Conf. Artificial Intelligence},
+  year      = {2024}
+}
+
+@inproceedings{macrorank2023,
+  author    = {Yifan Chen and Jing Mai and Xiaohan Gao and Muhan Zhang and David Z. Pan},
+  title     = {{MacroRank}: Ranking Macro Placement Solutions Leveraging Translation Equivariancy},
+  booktitle = {Proc. Asia and South Pacific Design Automation Conf. (ASP-DAC)},
   year      = {2023}
 }
 
-% ===== Diffusion for Chip Placement ===== (FROM PROJECT KNOWLEDGE ✓)
+% ===== ChiPBench =====
 
-@inproceedings{lee2024chip,
-  author    = {Vint Lee and Minh Nguyen and Leena Elzeiny and Chun Deng and Pieter Abbeel and John Wawrzynek},
-  title     = {Chip Placement with Diffusion Models},
-  booktitle = {Proceedings of the 42nd International Conference on Machine Learning},
-  series    = {ICML '25},
+@inproceedings{chipbench2025,
+  author    = {Zhijie Tu and Yiran Chen and Hai Li},
+  title     = {{ChiPBench}: Benchmarking End-to-End Performance of {AI}-Based Chip Placement Methods},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {38},
+  year      = {2025}
+}
+
+% ===== Commercial =====
+
+@misc{dsoai2025,
+  author    = {{Synopsys}},
+  title     = {{DSO.ai}: {AI}-Driven Design Space Optimization},
   year      = {2025},
-  publisher = {PMLR}
+  howpublished = {\url{https://www.synopsys.com/ai/dso-ai.html}}
 }
 
-% ===== RL Methods ===== (WELL-KNOWN ✓)
-
-@article{schulman2017proximal,
-  author    = {John Schulman and Filip Wolski and Prafulla Dhariwal and Alec Radford and Oleg Klimov},
-  title     = {Proximal Policy Optimization Algorithms},
-  journal   = {arXiv preprint arXiv:1707.06347},
-  year      = {2017}
+@misc{cerebrus2025,
+  author    = {{Cadence}},
+  title     = {{Cerebrus}: Intelligent Chip Explorer},
+  year      = {2025},
+  howpublished = {\url{https://www.cadence.com/cerebrus}}
 }
 
-@article{schulman2015gae,
-  author    = {John Schulman and Philipp Moritz and Sergey Levine and Michael Jordan and Pieter Abbeel},
-  title     = {High-Dimensional Continuous Control Using Generalized Advantage Estimation},
-  journal   = {arXiv preprint arXiv:1506.02438},
-  year      = {2015}
-}
+% ===== Foundational =====
 
-@inproceedings{kingma2015adam,
-  author    = {Diederik P. Kingma and Jimmy Ba},
-  title     = {Adam: A Method for Stochastic Optimization},
-  booktitle = {International Conference on Learning Representations},
-  year      = {2015}
-}
-
-@book{sutton2018reinforcement,
-  author    = {Richard S. Sutton and Andrew G. Barto},
-  title     = {Reinforcement Learning: An Introduction},
-  edition   = {Second},
-  year      = {2018},
-  publisher = {The MIT Press},
-  address   = {Cambridge, Massachusetts}
-}
-
-% ===== Graph Partitioning Tools ===== (VERIFIED ✓)
-
-@article{karypis1999multilevel,
-  author    = {George Karypis and Rajat Aggarwal and Vipin Kumar and Shashi Shekhar},
-  title     = {Multilevel Hypergraph Partitioning: Applications in {VLSI} Domain},
-  journal   = {IEEE Transactions on Very Large Scale Integration (VLSI) Systems},
-  volume    = {7},
-  number    = {1},
-  pages     = {69--79},
-  year      = {1999},
-  publisher = {IEEE},
-  doi       = {10.1109/92.748202}
+@article{kahng2022vlsi,
+  author    = {Andrew B. Kahng and Jens Lienig and Igor L. Markov and Jin Hu},
+  title     = {{VLSI} Physical Design: From Graph Partitioning to Timing Closure},
+  journal   = {Springer},
+  year      = {2022},
+  edition   = {2nd}
 }

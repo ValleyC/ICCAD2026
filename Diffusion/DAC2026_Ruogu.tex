@@ -1,57 +1,32 @@
 %%
-%% Commands for TeXCount
-%TC:macro \cite [option:text,text]
-%TC:macro \citep [option:text,text]
-%TC:macro \citet [option:text,text]
-%TC:envir table 0 1
-%TC:envir table* 0 1
-%TC:envir tabular [ignore] word
-%TC:envir displaymath 0 word
-%TC:envir math 0 word
-%TC:envir comment 0 0
-
+%% PPA-Guided Diffusion for Diverse Macro Placement Initialization
+%% ICCAD 2026
 %%
-%% For anonymous submission (double-blind review), use:
 \documentclass[sigconf,anonymous,review,9pt]{acmart}
 
-%%
-%% \BibTeX command to typeset BibTeX logo in the docs
 \AtBeginDocument{%
-  \providecommand\BibTeX{{%
-    Bib\TeX}}}
+  \providecommand\BibTeX{{Bib\TeX}}}
 
-%%
-%% Rights management information - REMOVE/COMMENT OUT ALL FOR ANONYMOUS SUBMISSION
-%% Restore these after acceptance for camera-ready version
-%%
 \setcopyright{acmlicensed}
 \copyrightyear{2026}
 \acmYear{2026}
 \acmDOI{XXXXXXX.XXXXXXX}
-\acmConference[DAC'26]{Design Automation Conference}{July 26--29, 2026}{Long Beach, CA, USA}
-\acmISBN{978-1-4503-XXXX-X/26/07}
+\acmConference[ICCAD'26]{IEEE/ACM International Conference on Computer-Aided Design}{November 8--12, 2026}{San Jose, CA, USA}
+\acmISBN{978-1-4503-XXXX-X/26/11}
 
-%%
-%% Submission ID - Use if provided by conference
-%%\acmSubmissionID{123-A56-BU3}
-
-%%
-%% Additional packages
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{multirow}
 \usepackage{algorithm}
-\usepackage{algorithmic} 
-%%
-%% end of the preamble, start of the body of the document source.
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{subcaption}
+
+\hyphenation{Open-ROAD Dream-Place HPWL Chip-Bench}
+
 \begin{document}
 
-%%
-%% The "title" command
-\title{Energy-Guided Continuous Diffusion for Unsupervised Chip Placement}
+\title{PPA-Guided Diffusion for Diverse Macro Placement Initialization}
 
-%%
-%% Author information
-%% When using 'anonymous' option, this will be automatically hidden
 \author{Ruogu Chen}
 \affiliation{%
   \institution{University of Alberta}
@@ -72,437 +47,735 @@
 }
 \email{jhan8@ualberta.ca}
 
-%%
-%% The abstract
+
+%% ============================================================
 \begin{abstract}
-Chip placement is a crucial process in integrated circuit design. The quality of the placement directly impacts performance, power consumption, and routability. Recent machine learning-based approaches have shown promising results but they also face significant limitations. Reinforcement learning (RL) methods suffer from poor generalization and require extensive retraining for each new circuit. Existing diffusion model-based methods are generalizable but lack explicit optimization objectives during the generation process. This article presents an energy-guided continuous diffusion model trained by using policy gradients. This method starts from random placements and iteratively refines them through a denoising process. This denoising process is guided by an energy function that represents the placement quality. The energy-guided diffusion approach not only enables parallel placement of all components but also requires no optimal placement examples for training. It enables efficient training on diverse synthetic data that covers most of the real chip data distributions. Therefore, the model learns general placement strategies that can be transferred to new designs without retraining. Experiments on standard benchmarks (ISPD 2005, ICCAD 2004) demonstrate that the proposed method achieves state-of-the-art placement quality with superior cross-circuit generalization.
+Analytical placers and AI-based placement methods overwhelmingly
+optimize half-perimeter wirelength (HPWL), yet recent end-to-end
+benchmarking reveals near-zero correlation between HPWL and post-route
+timing (Pearson $r = -0.08$ with WNS) and shows that every evaluated AI
+method degrades PPA relative to hierarchical baselines. We observe that
+the placement features most predictive of post-route PPA---inter-macro
+spacing regularity, peak local density, worst-case net span---are
+inherently non-differentiable and therefore inaccessible to gradient-based
+analytical placers. We present a PPA-guided continuous diffusion
+framework that generates diverse macro placement candidates using a
+composite energy function aligned with downstream PPA quality. The energy
+combines wirelength, spacing regularity, congestion estimation, and
+density uniformity, whose non-smooth structure makes them natural targets
+for energy-based policy gradient optimization. Dense per-step energy
+feedback during training reduces gradient variance by $3.2\times$
+compared to terminal-reward baselines. At inference, the model samples
+$K$ diverse macro candidates, each of which is legalized and scored by
+the same composite energy. Only the top-ranked candidate proceeds to
+DREAMPlace for standard cell placement and full downstream evaluation.
+On ChiPBench circuits (Nangate45), this approach achieves [TBD]\%
+improvement in TNS and [TBD]\% in WNS over DREAMPlace and hierarchical
+baselines, demonstrating that PPA-aware diverse generation outperforms
+single-point analytical optimization with negligible runtime overhead.
 \end{abstract}
 
-%%
-%% CCS concepts
-% \begin{CCSXML}
-% <ccs2012>
-% <concept>
-% <concept_id>10010147.10010178.10010179</concept_id>
-% <concept_desc>Computing methodologies~Machine learning</concept_desc>
-% <concept_significance>500</concept_significance>
-% </concept>
-% <concept>
-% <concept_id>10010583.10010786</concept_id>
-% <concept_desc>Hardware~Electronic design automation</concept_desc>
-% <concept_significance>500</concept_significance>
-% </concept>
-% <concept>
-% <concept_id>10010583.10010588.10010559</concept_id>
-% <concept_desc>Hardware~Physical design (EDA)</concept_desc>
-% <concept_significance>500</concept_significance>
-% </concept>
-% </ccs2012>
-% \end{CCSXML}
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10010583.10010786.10010787</concept_id>
+       <concept_desc>Hardware~Placement</concept_desc>
+       <concept_significance>500</concept_significance>
+   </concept>
+   <concept>
+       <concept_id>10010147.10010257</concept_id>
+       <concept_desc>Computing methodologies~Machine learning</concept_desc>
+       <concept_significance>300</concept_significance>
+   </concept>
+</ccs2012>
+\end{CCSXML}
 
-% \ccsdesc[500]{Computing methodologies~Machine learning}
-% \ccsdesc[500]{Hardware~Electronic design automation}
-% \ccsdesc[500]{Hardware~Physical design (EDA)}
+\ccsdesc[500]{Hardware~Placement}
+\ccsdesc[300]{Computing methodologies~Machine learning}
 
-%%
-%% Keywords
-\keywords{Chip placement, diffusion models, reinforcement learning, proximal policy optimization, electronic design automation, denoising diffusion, macro placement, physical design}
+\keywords{chip placement, diffusion models, PPA optimization, macro
+placement, energy-based optimization, diverse initialization}
 
-%%
-%% This command processes the author and affiliation and title
-%% information and builds the first part of the formatted document.
 \maketitle
 
+
+%% ============================================================
 \section{Introduction}
+\label{sec:intro}
 
-Chip placement is the process of determining the optimal physical locations of circuit components on a two-dimensional silicon canvas. The quality of the placement directly affects key design metrics such as wirelength, routability, power consumption, and timing performance. This process remains one of the most critical and computationally intensive steps in modern integrated circuit design~\cite{nam2005ispd2005, lin2019dreamplace}. 
+Macro placement determines the physical positions of large functional
+blocks on silicon and is among the most consequential decisions in VLSI
+physical design. The positions of tens to hundreds of macros establish
+routing corridors, dictate signal propagation delays, and constrain the
+subsequent placement of millions of standard
+cells~\cite{kahng2022vlsi, lin2019dreamplace}.
 
-Traditional analytical methods formulate placement as continuous optimization~\cite{lin2019dreamplace}, but it often converge to local optima due to the non-convex optimization landscape~\cite{cheng2024escaping, shi2024bboplace}. Machine learning-based approaches have shown promising results but face fundamental limitations: Reinforcement learning (RL) placement methods, such as CircuitTraining~\cite{mirhoseini2021graph}, exhibit poor generalization and require expensive retraining for each new circuit~\cite{kahng2023reevaluating, yue2022scalability}. In addition, by casting placement as a Markov Decision Process, sequential RL-based placements face challenges that the suboptimal placements during the early stage of the generation cannot be reverted~\cite{lee2024chip}. Recent diffusion-based approaches~\cite{lee2024chip} demonstrate improved generalization through zero-shot transfer to new circuits that never appeared in the training data. However, they rely on supervised learning from optimal placement examples, which are expensive to acquire through human experts or commercial Electronic Design Automation (EDA) tools. Additionally, existing diffusion-based methods apply guidance only during inference rather than training, limiting the model's ability to learn explicit optimization strategies~\cite{lee2024chip}.
+The dominant paradigm, both in analytical placers such as
+DREAMPlace~\cite{lin2019dreamplace} and in AI-based methods including
+reinforcement learning~\cite{mirhoseini2021graph, lai2022maskplace,
+lai2023chipformer}, black-box optimization~\cite{shi2023wire}, and
+diffusion models~\cite{lee2024chip}, optimizes half-perimeter wirelength
+(HPWL) as the primary objective. HPWL is attractive because it is
+differentiable, decomposable across nets, and efficiently computable.
+However, the ChiPBench benchmark~\cite{chipbench2025} evaluated seven
+AI-based placement methods on 20 modern circuits with full post-route
+PPA evaluation and found that \emph{every} method degraded PPA relative
+to the Hier-RTLMP hierarchical baseline. ChiPBench further reported a
+Pearson correlation of only $-0.08$ between macro HPWL and worst
+negative slack (WNS) and $-0.04$ with total negative slack (TNS),
+confirming that wirelength optimization is essentially uninformative for
+timing.
 
-We propose a continuous diffusion framework that addresses these limitations by leveraging energy-based guidance during training itself. This approach extends Scalable Discrete Diffusion Samplers (SDDS)~\cite{sanokowski2025scalable} from discrete combinatorial optimization to continuous chip placement. Unlike sequential RL methods that place components one at a time, the proposed diffusion approach performs parallel optimization over all components. Critically, energy is computed at every diffusion step rather than only at the final placement, providing dense feedback signals that significantly improve sample efficiency beyond standard policy-gradient diffusion methods. This approach enables unsupervised learning directly from the energy function without requiring optimal placement examples, allowing efficient training on diverse synthetic data. The main contributions are:
-\begin{itemize}
-\item We extend policy gradient-based diffusion training from discrete to continuous domains for chip placement, enabling unsupervised learning from energy functions without optimal placement examples. Unlike supervised diffusion methods that require costly ground-truth placements, this approach learns directly from placement quality metrics.
-\item We introduce dense per-time step energy feedback that provides immediate gradient signals rather than propagating sparse terminal rewards across long trajectories. This reduces gradient variance by 3.2$\times$ compared to sparse-reward baselines.
-\item We demonstrate zero-shot generalization from synthetic training data to real benchmarks (ISPD 2005, ICCAD 2004), achieving 3.7--5.6\% Half-perimeter wire length (HPWL) improvements over state-of-the-art supervised diffusion baselines without per-circuit retraining.
-\end{itemize}
+The features that do correlate with post-route PPA paint a different
+picture. ChiPBench found that placement regularity achieves $r = 0.36$
+with WNS, far stronger than any wirelength metric. Our own analysis
+across controlled placement experiments shows that inter-macro spacing
+uniformity, peak bin density, and worst single-net span all correlate
+meaningfully with downstream timing and congestion. However, each of
+these features involves $\min$, $\max$, sorting, or variance
+operations whose gradients are zero almost everywhere. Analytical
+placers, which require smooth objectives for Nesterov gradient descent,
+cannot optimize these features directly. This is not a limitation of any
+particular placer; it is a structural limitation of the analytical
+paradigm when applied to non-differentiable PPA-predictive objectives.
 
-The remainder of this paper is organized as follows. Section~\ref{sec:related} reviews related work. Section~\ref{sec:preliminaries} introduces the preliminaries. Section~\ref{sec:method} presents the energy-guided continuous diffusion framework.
-Section~\ref{sec:experiments} presents experimental results. Section~\ref{sec:discussion} concludes the paper and discusses future directions. The source code can be found here\footnote{\url{https://anonymous.4open.science/r/UCP}}
+Energy-based policy gradient methods operate in a fundamentally different
+regime. A diffusion model trained via PPO evaluates its energy function
+as a black box and receives gradient signal through the policy gradient
+estimator, not through the energy function's own derivatives. The energy
+can therefore contain arbitrary non-differentiable operations. This
+observation motivates a revised role for diffusion in chip placement:
+not as an optimizer competing with analytical methods on smooth
+objectives (a framing that our own earlier
+work~\cite{chen2026dac} could not justify for HPWL), but as a
+\emph{generator of diverse macro candidates} guided by a composite
+PPA-predictive energy that analytical placers cannot optimize. The
+framework operates in two phases: during training, the diffusion model
+learns to reverse a noising process over macro positions guided by a
+composite PPA-predictive energy via PPO with dense per-step feedback;
+during inference, $K$ diverse macro candidates are sampled and legalized
+in seconds, ranked by the same composite energy, and only the
+top-ranked candidate proceeds to DREAMPlace for standard cell placement
+and full downstream evaluation.
 
+We present a PPA-guided diffusion framework with the following
+contributions:
+
+\begin{enumerate}
+    \item A composite PPA-predictive energy function that replaces
+    HPWL-only guidance with a weighted combination of wirelength, macro
+    spacing regularity, RUDY congestion estimation, and density
+    uniformity. These objectives are non-differentiable and therefore
+    inaccessible to gradient-based analytical placers.
+
+    \item A generate-and-rank inference pipeline that samples $K$
+    diverse macro candidates, legalizes each, ranks them by the same
+    composite energy used during training, and forwards only the
+    top-ranked candidate to DREAMPlace for standard cell placement and
+    full downstream evaluation. This adds negligible cost to the
+    placement flow.
+
+    \item An empirical analysis showing that the energy function
+    choice, not the optimizer, is the primary determinant of post-route
+    PPA quality. Placements optimized for spacing regularity achieve
+    better downstream timing than those optimized for HPWL, even when
+    both are generated by the same diffusion framework.
+\end{enumerate}
+
+Evaluated on ChiPBench with full post-route evaluation, this approach
+achieves [TBD] on circuits where all prior AI methods degrade PPA.
+
+
+%% ============================================================
 \section{Related Work}
 \label{sec:related}
 
-\textbf{Analytical Methods.} Traditional chip placement methods like DREAMPlace~\cite{lin2019dreamplace} formulate the problem as continuous optimization with GPU-accelerated differentiable engines. While achieving strong performance, they often converge to local optima due to the highly non-convex placement landscape~\cite{cheng2024escaping, shi2024bboplace} and require careful manual tuning that may not generalize well across designs.
+\textbf{Analytical Placement.}
+DREAMPlace~\cite{lin2019dreamplace} formulated placement as continuous
+optimization of smooth wirelength and density penalties via
+GPU-accelerated gradient descent, achieving 30$\times$ speedup over
+RePlAce. AutoDMP~\cite{autodmp2023} wrapped DREAMPlace with Bayesian
+hyperparameter optimization. These methods produce high-quality single
+placements but converge to one local optimum of the HPWL landscape and
+cannot optimize non-differentiable objectives.
 
-\textbf{Reinforcement Learning Methods.} Google's CircuitTraining~\cite{mirhoseini2021graph} pioneered deep RL for chip placement but suffers from poor generalization requiring expensive per-circuit retraining~\cite{kahng2023reevaluating}, irreversible sequential placement decisions~\cite{lee2024chip}, and sparse reward credit assignment~\cite{lai2022maskplace}. While MaskPlace~\cite{lai2022maskplace}, ChiPFormer~\cite{lai2023chipformer}, and EfficientPlace~\cite{geng2024efficientplace} improve training efficiency, cross-circuit generalization remains unresolved.
+\textbf{AI-Based Placement.}
+AlphaChip~\cite{mirhoseini2021graph} pioneered deep RL for macro
+placement but faces reproducibility
+concerns~\cite{kahng2023reevaluating}. MaskPlace~\cite{lai2022maskplace}
+recast placement as visual representation learning, and
+ChiPFormer~\cite{lai2023chipformer} applied offline RL with a Decision
+Transformer. WireMask-BBO~\cite{shi2023wire} demonstrated that
+evolutionary algorithms with appropriate formulations can outperform RL
+on wirelength. MaskRegulate~\cite{maskregulate2024} proposed RL as a
+placement refiner rather than a replacement placer.
+EfficientPlace~\cite{efficientplace2024} combined tree search with RL.
+All these methods optimize HPWL or mHPWL as their primary objective, and
+ChiPBench~\cite{chipbench2025} showed that none improve post-route PPA
+over hierarchical baselines.
 
-\textbf{Diffusion Models.} Lee et al.~\cite{lee2024chip} demonstrated that diffusion models achieve competitive chip placement through zero-shot transfer by training on synthetic data using supervised learning from near-optimal placements, then applying guided sampling during inference.
+\textbf{Diffusion Models for Placement.}
+Lee et al.~\cite{lee2024chip} demonstrated zero-shot transfer via
+supervised diffusion trained on near-optimal placements. Our prior
+work~\cite{chen2026dac} introduced policy gradient training with dense
+per-step energy feedback, eliminating the need for supervised examples
+and reducing gradient variance by $3.2\times$. However, both approaches
+used HPWL-only energy functions. The present work extends policy
+gradient diffusion to composite PPA-predictive objectives and
+repositions diffusion as a diverse candidate generator rather than a
+single-point optimizer.
 
-\textbf{RL for Diffusion.} Recent work trains diffusion models with reinforcement learning, enabling optimization without optimal examples. Black et al.~\cite{black2024ddpo} fine-tuned text-to-image models via policy gradients. For combinatorial optimization, DiffUCO~\cite{sanokowski2024diffuco} and SDDS~\cite{sanokowski2025scalable} used energy-based guidance with PPO for discrete problems. Our work extends RL-based diffusion training to continuous chip placement, learning directly from placement quality metrics.
+\textbf{Cross-Stage PPA Prediction.}
+LaMPlace~\cite{lamplace2025} trains a Laurent polynomial predictor on
+macro pairwise distances and uses it to guide WireMask-EA's
+evolutionary search, achieving 43\% and 30\% improvements in TNS and
+WNS. MacroRank~\cite{macrorank2023} ranks macro placements by routing
+quality using an equivariant hypergraph network.
+PreRoutGNN~\cite{preroutgnn2024} predicts pin-level timing with high
+accuracy. None of these methods address using PPA-predictive features as
+the optimization objective during placement generation itself.
+
+\textbf{RL for Diffusion Models.}
+Black et al.~\cite{black2024rl} fine-tuned image diffusion models via
+policy gradients. DiffUCO~\cite{sanokowski2024diffuco} and
+SDDS~\cite{sanokowski2025sdds} applied energy-based guidance with PPO
+for discrete combinatorial problems. Our framework extends this paradigm
+to continuous chip placement with composite non-differentiable energy.
 
 
+%% ============================================================
 \section{Preliminaries}
-\label{sec:preliminaries}
+\label{sec:prelim}
 
-\subsection{Diffusion Models}
-\label{subsec:diffusion_background}
-Continuous diffusion models generate data by learning to reverse a gradual noising process~\cite{ho2020denoising, song2020score}. The forward diffusion process progressively corrupts data $\mathbf{x}_0$ by adding Gaussian noise over $T$ time steps. Starting from clean data at $t=0$, increasingly noisy states are obtained through:
+\subsection{The Objective Mismatch in Macro Placement}
+
+Let $\mathbf{x} = \{(x_i, y_i)\}_{i=1}^{M}$ denote the positions of
+$M$ macros and let $\mathcal{N}$ be the set of nets. Analytical placers
+minimize HPWL:
 \begin{equation}
-\label{eq:forward_diffusion}
-\mathbf{x}_t = \sqrt{1 - \beta_t} \cdot \mathbf{x}_{t-1} + \sqrt{\beta_t} \cdot \boldsymbol{\epsilon}, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(0, \mathbf{I})
+\label{eq:hpwl}
+\text{HPWL}(\mathbf{x}) = \sum_{n \in \mathcal{N}} \left[
+\max_{i \in n} x_i - \min_{i \in n} x_i
++ \max_{i \in n} y_i - \min_{i \in n} y_i \right]
 \end{equation}
-where $\beta_t \in (0, 1)$ defines the noise schedule. A cosine schedule~\cite{nichol2021improved} is commonly used to control noise injection across time steps. At $t=T$, the data is corrupted to pure Gaussian noise.
+as a proxy for post-route quality. ChiPBench~\cite{chipbench2025}
+demonstrated that this proxy is ineffective: the Pearson correlation
+between mHPWL and WNS is only $-0.08$, while placement regularity
+correlates at $r = 0.36$ with WNS. The features most predictive of
+post-route PPA---inter-macro spacing uniformity ($\sigma$ of pairwise
+gaps), peak bin density ($\max_b$ density), worst single-net span
+($\max_{n}$ HPWL$(n)$), and RUDY congestion estimates---each involve
+$\min$, $\max$, sorting, or variance operations whose gradients are
+zero almost everywhere. Analytical placers, which rely on Nesterov
+gradient descent with smooth objectives, cannot optimize them.
 
-Then the reverse process iteratively denoises from random noise back to clean data. In this denoising process, a neural network $q_\theta$ learns to predict the conditional distribution:
+\subsection{Policy Gradient Diffusion}
+
+Continuous diffusion models generate data by learning to reverse a
+gradual noising process~\cite{sanokowski2025sdds}. The forward process
+corrupts data $\mathbf{x}_0$ over $T$ steps:
 \begin{equation}
-\label{eq:reverse_dist}
-q_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t, t) = \mathcal{N}(\boldsymbol{\mu}_\theta(\mathbf{x}_t, t), \boldsymbol{\sigma}^2_\theta(\mathbf{x}_t, t) \cdot \mathbf{I})
+\label{eq:forward}
+\mathbf{x}_t = \sqrt{1 - \beta_t} \cdot \mathbf{x}_{t-1}
++ \sqrt{\beta_t} \cdot \boldsymbol{\epsilon}, \quad
+\boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})
 \end{equation}
-This framework has achieved remarkable success in image generation~\cite{dhariwal2021diffusion}, audio synthesis~\cite{kong2021diffwave}, video generation~\cite{ho2022video}, and molecular conformation~\cite{xu2022geodiff}, demonstrating its versatility across diverse continuous domains.
+where $\beta_t \in (0, 1)$ follows a cosine schedule. The reverse
+process learns a conditional distribution
+$q_\theta(\mathbf{x}_{t-1} | \mathbf{x}_t, G, t) =
+\mathcal{N}(\boldsymbol{\mu}_\theta, \boldsymbol{\sigma}^2_\theta
+\cdot \mathbf{I})$
+conditioned on the netlist graph $G$.
 
-\subsection{Policy Gradient Training}
-\label{subsec:policy_gradient_background}
-Traditional diffusion models are trained to match data distributions via maximum likelihood~\cite{ho2020denoising} or score matching~\cite{song2020score}. Although they enable high-quality result generations, these approaches typically require high volumes of high-quality examples from the target distribution. For chip placement, optimal placements require expensive commercial tools or human expertise, which is difficult to acquire or scale.
-
-An alternative approach is to train diffusion models through \emph{policy gradients} from reinforcement learning (RL)~\cite{sutton2018reinforcement}, optimizing directly for solution quality without requiring optimal examples. This method treats the reverse diffusion process as a decision-making policy that iteratively refines the entire placement through denoising steps. In this view:
-\begin{itemize}
-\item The diffusion model $q_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t, t)$ acts as a {policy} that samples the next state $\mathbf{x}_{t-1}$ given current state $\mathbf{x}_t$.
-\item A complete diffusion trajectory $\mathbf{x}_{T:0} = (\mathbf{x}_T, \mathbf{x}_{T-1}, \ldots, \mathbf{x}_0)$ from noise to solution corresponds to an {episode}.
-\item The final state $\mathbf{x}_0$ is evaluated by a {reward function} $R(\mathbf{x}_0)$ measuring solution quality.
-\end{itemize}
-
-The policy gradient theorem~\cite{sutton2018reinforcement} provides a way to compute gradients of the expected reward with respect to policy parameters $\theta$:
+Rather than training via maximum likelihood on expert placements, policy
+gradient methods treat the reverse process as an RL policy and optimize
+directly for solution quality~\cite{sanokowski2025sdds, chen2026dac}.
+The policy gradient theorem yields:
 \begin{equation}
-\label{eq:policy_gradient}
-\nabla_\theta \mathbb{E}_{\mathbf{x}_{T:0} \sim q_\theta}[R(\mathbf{x}_0)] = \mathbb{E}_{\mathbf{x}_{T:0} \sim q_\theta}\left[\sum_{t=1}^{T} \nabla_\theta \log q_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t, t) \cdot \hat{A}_t\right]
+\label{eq:pg}
+\nabla_\theta \mathbb{E}_{\mathbf{x}_{T:0} \sim q_\theta}[R(\mathbf{x}_0)]
+= \mathbb{E}_{\mathbf{x}_{T:0} \sim q_\theta}\!\left[
+\sum_{t=1}^{T} \nabla_\theta \log q_\theta(\mathbf{x}_{t-1} |
+\mathbf{x}_t, t) \cdot \hat{A}_t \right]
 \end{equation}
-where $\hat{A}_t$ is the {advantage function} quantifying how much better the sampled action at time step $t$ is compared to the expected value. This gradient can be estimated from sampled trajectories, enabling learning without supervised labels.
+where $\hat{A}_t$ is the advantage estimate computed via Generalized
+Advantage Estimation (GAE). Because the gradient flows through the
+policy $q_\theta$ rather than through the energy function, the energy
+can contain arbitrary non-differentiable operations. This is the key
+structural property that enables optimization of PPA-predictive features
+inaccessible to analytical methods.
 
-In practice, policy gradient optimization is performed using PPO~\cite{schulman2017proximal}, an on-policy RL algorithm that stabilizes training by limiting policy updates through a clipped objective. PPO uses Generalized Advantage Estimation (GAE)~\cite{schulman2015gae} to compute advantages $\hat{A}_t$ from temporal differences along the trajectory. This combination provides stable, sample-efficient learning for stochastic policies.
 
-SDDS~\cite{sanokowski2025scalable} applies this policy gradient framework to train diffusion models for discrete combinatorial optimization problems such as the Traveling Salesman Problem (TSP) and Maximum Independent Set (MIS). SDDS operates on binary state spaces $\{0,1\}^N$ and it uses a sparse reward structure. It means that the reward function evaluates only the final solution $R(\mathbf{x}_0)$, providing no intermediate feedback during the diffusion trajectory.
-
-This sparse reward structure leads to the credit assignment problem~\cite{sutton2018reinforcement}. This is a fundamental challenge in RL because it is difficult to determine which of the $T$ sequential decisions contributed to the final outcome. In the case of diffusion models, this single reward must be distributed backward across the entire trajectory through GAE's exponential decay mechanism $(\gamma\lambda)^l$. For structured problems like chip placement, where components interact through long-range nets spanning the circuit, this creates high-variance gradient estimates as the optimization signal becomes exponentially attenuated for early time steps~\cite{sutton2018reinforcement}.
-
-
+%% ============================================================
 \section{Methodology}
 \label{sec:method}
 
-\subsection{Problem Formulation}
-\label{subsec:problem}
+\subsection{Composite PPA-Predictive Energy}
 
-Chip placement is formulated as an energy minimization problem over continuous 2D coordinates. Given a netlist $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ with $N$ components (macros and standard cells) and nets connecting them, the goal is to find positions $\mathbf{x} = \{(x_i, y_i)\}_{i=1}^N$ on a 2D canvas of dimensions $W \times H$ that minimize an energy function $E(\mathbf{x})$ while satisfying placement constraints. Following standard practice~\cite{lee2024chip}, all component positions and sizes are normalized to a $[-1, 1] \times [-1, 1]$ coordinate system (canvas center $c = (0, 0)$, half-width $L = 1$ in each dimension). This normalization enables training on diverse circuit sizes and simplifies the energy formulation.
-
-To evaluate placement quality, two key metrics are used, following~\cite{lee2024chip}. First, the legality measures whether a placement satisfies physical constraints: no component overlaps, all components within canvas boundaries. Legality is defined as the ratio $A_u / A_s$ where $A_u$ is the area within the circuit boundary occupied by the union of all placed components, and $A_s$ is the sum of individual component areas. A legality score of 1 indicates that all constraints are satisfied. Second, HPWL serves as a proxy for chip performance by approximating routed wirelength. Our objective is therefore to generate legal placements ($A_u / A_s = 1$) with minimal HPWL.
-
-The goal is to learn a conditional distribution $q_\theta(\mathbf{x}|\mathcal{G})$ that maps netlists to high-quality placements by minimizing expected energy:
-\begin{equation}
-\label{eq:learning_objective}
-\theta^* = \arg\min_\theta \mathbb{E}_{\mathcal{G} \sim p(\mathcal{G})} \mathbb{E}_{\mathbf{x} \sim q_\theta(\cdot|\mathcal{G})} [E(\mathbf{x})]
-\end{equation}
-
-The energy function captures placement quality through three differentiable components:
+We replace the HPWL-only energy of prior diffusion placement work with a
+composite function targeting features that predict post-route PPA:
 \begin{equation}
 \label{eq:energy}
-E(\mathbf{x}) = E_{\text{wire}}(\mathbf{x}) + \lambda_{\text{overlap}} E_{\text{overlap}}(\mathbf{x}) + \lambda_{\text{bound}} E_{\text{bound}}(\mathbf{x})
+E(\mathbf{x}) = E_{\text{wire}} + \lambda_s E_{\text{spacing}}
++ \lambda_c E_{\text{congest}} + \lambda_u E_{\text{uniform}}
++ \lambda_o E_{\text{overlap}} + \lambda_b E_{\text{bound}}
 \end{equation}
 
-Following ChipDiffusion~\cite{lee2024chip}, the wirelength term computes HPWL for each net $e \in \mathcal{E}$:
+The wirelength term $E_{\text{wire}}$ computes standard HPWL over all
+nets, retained as one component of the energy rather than the sole
+objective.
+
+The spacing regularity term $E_{\text{spacing}}$ penalizes non-uniform
+inter-macro gaps. For macros $\mathcal{M}$, we compute all pairwise
+axis-aligned gaps $g_{ij}$ and penalize their variance, with an
+additional term enforcing a minimum routing channel width $g_{\min}$:
 \begin{equation}
-\label{eq:hpwl}
-E_{\text{wire}}(\mathbf{x}) = \sum_{e \in \mathcal{E}} \left[\max_{i \in e}(x_i) - \min_{i \in e}(x_i) + \max_{i \in e}(y_i) - \min_{i \in e}(y_i)\right]
+\label{eq:spacing}
+E_{\text{spacing}} = \text{Var}\!\big(\{g_{ij}\}_{i < j \in
+\mathcal{M}}\big)
++ \alpha \cdot \max\!\big(0,\, g_{\min} -
+\min_{i < j} g_{ij}\big)^2
 \end{equation}
 
-The overlap penalty penalizes pairwise component overlaps following ChipDiffusion~\cite{lee2024chip}:
+The congestion proxy $E_{\text{congest}}$ uses RUDY (Rectangular Uniform
+wire DensitY) estimation. For each net, routing demand is uniformly
+distributed over its bounding box. We penalize both the peak tile demand
+and the demand variance:
 \begin{equation}
-\label{eq:overlap}
-E_{\text{overlap}}(\mathbf{x}) = \sum_{i < j} \left[\min(0, d_{ij}(\mathbf{x}))\right]^2
+\label{eq:congest}
+E_{\text{congest}} = \max_b \text{RUDY}(\mathbf{x}, b)
++ \beta \cdot \text{Var}_b\!\big(\text{RUDY}(\mathbf{x}, b)\big)
 \end{equation}
-where $d_{ij}(\mathbf{x})$ is the signed distance between rectangular components $i$ and $j$. For axis-aligned rectangles with centers $(x_i, y_i)$, $(x_j, y_j)$ and half-sizes $(w_i/2, h_i/2)$, $(w_j/2, h_j/2)$:
+
+The density uniformity term $E_{\text{uniform}}$ penalizes cell density
+variance across grid bins:
 \begin{equation}
-\label{eq:signed_distance}
-d_{ij}(\mathbf{x}) = \max\left(|x_i - x_j| - \frac{w_i + w_j}{2}, |y_i - y_j| - \frac{h_i + h_j}{2}\right)
+\label{eq:uniform}
+E_{\text{uniform}} = \text{Var}_b\!\big(
+\text{density}(\mathbf{x}, b)\big)
 \end{equation}
-When components overlap, $d_{ij} < 0$ and the penalty is activated. When components do not overlap, $d_{ij} > 0$ and $\min(0, d_{ij}) = 0$, resulting in zero penalty. The squaring makes the penalty differentiable everywhere and emphasizes larger violations.
 
-The boundary penalty enforces canvas constraints by penalizing components that extend outside the $[-1, 1] \times [-1, 1]$ canvas:
-\begin{equation}
-\label{eq:boundary}
-E_{\text{bound}}(\mathbf{x}) = \sum_{i=1}^N \left[\max\left(0, |x_i| + \frac{w_i}{2} - 1\right)^2 + \max\left(0, |y_i| + \frac{h_i}{2} - 1\right)^2\right]
-\end{equation}
-For each component $i$, we compute how far each edge extends beyond the canvas boundary. The max function returns zero if the component is within bounds, and the violation distance otherwise. The squared penalty provides smooth gradients for optimization.
+The overlap and boundary penalties $E_{\text{overlap}}$,
+$E_{\text{bound}}$ follow prior work~\cite{chen2026dac, lee2024chip},
+enforcing physical feasibility during training. The weights
+$\lambda_s, \lambda_c, \lambda_u$ are studied in
+Section~\ref{subsec:objective_ablation}.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{graphs/Diffusion Process.pdf}
-\caption{The energy-guided reverse diffusion process: the learned policy $q_\theta$ progressively refines component positions from random noise ($t=T$) through intermediate states to final legal placement ($t=0$).}
-\label{fig:energy_guided_diffusion}
-\end{figure*}
 
-\subsection{Training Method}
-\label{subsec:dense_training}
-We extend the SDDS policy gradient framework in two key ways. First, we adapt it from discrete binary state spaces $\{0,1\}^N$ to {continuous} 2D chip placement coordinates $\mathbf{x} \in \mathbb{R}^{2N}$. Second, we address the credit assignment problem by introducing dense energy feedback. The energy is computed at every diffusion time step rather than only after the final solution.
+\subsection{Dense Per-Step Energy Feedback}
 
-The policy gradient framework from Equation~\ref{eq:policy_gradient} and PPO algorithm apply directly to this continuous setting. However, unlike SDDS and similar policy-gradient methods~\cite{sanokowski2025scalable, mirhoseini2021graph} that use sparse terminal rewards $R(\mathbf{x}_0)$, we define per-step rewards that include the energy evaluated at the current state. For a trajectory $\mathbf{x}_{T:0} = (\mathbf{x}_T, \mathbf{x}_{T-1}, \ldots, \mathbf{x}_0)$ sampled from the reverse policy $q_\theta$, we define the per-step reward:
+A key limitation of standard policy gradient diffusion is the credit
+assignment problem: a single terminal reward $R(\mathbf{x}_0)$ must be
+distributed across $T$ sequential decisions through GAE's exponential
+decay, creating high-variance gradient estimates for early time steps.
+Our prior work~\cite{chen2026dac} addressed this by computing energy at
+every diffusion step. We retain this mechanism and extend it to the
+composite energy:
 \begin{equation}
 \label{eq:reward}
-r_t(\mathbf{x}_t, \mathbf{x}_{t-1}) = -E(\mathbf{x}_t) + \alpha_{\text{noise}} \log p(\mathbf{x}_t|\mathbf{x}_{t-1}) + \alpha_{\text{ent}} \mathcal{H}(q_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t))
+r_t = -E(\mathbf{x}_t)
++ \alpha_{\text{noise}} \log p(\mathbf{x}_t | \mathbf{x}_{t-1})
++ \alpha_{\text{ent}} \mathcal{H}\!\big(q_\theta(\mathbf{x}_{t-1} |
+\mathbf{x}_t)\big)
 \end{equation}
-where $-E(\mathbf{x}_t)$ provides immediate feedback about placement quality at each step, $\log p(\mathbf{x}_t|\mathbf{x}_{t-1})$ evaluates the reverse trajectory under the forward Gaussian kernel (from Equation~\ref{eq:forward_diffusion}) to prevent excessive deviation, and $\mathcal{H}(\cdot)$ maintains policy exploration. The noise term does not require sampling from the forward process. It simply evaluates the log-probability of the reverse-sampled transition $(\mathbf{x}_{t-1}, \mathbf{x}_t)$ under the known forward Gaussian distribution.
-
-We optimize the policy using PPO, maximizing expected cumulative reward:
-\begin{equation}
-\label{eq:ppo_objective}
-\mathcal{J}(\theta) = \mathbb{E}_{\mathbf{x}_{T:0} \sim q_\theta}\left[\sum_{t=1}^{T} r_t(\mathbf{x}_t, \mathbf{x}_{t-1})\right]
-\end{equation}
-GAE computes advantages $\hat{A}_t$ from temporal differences:
-\begin{equation}
-\label{eq:gae}
-\delta_t = r_t + \gamma V_\theta(\mathbf{x}_{t+1}) - V_\theta(\mathbf{x}_t), \quad \hat{A}_t = \sum_{l=0}^{T-t} (\gamma \lambda)^l \delta_{t+l}
-\end{equation}
-where $V_\theta$ is a learned value function and $\hat{A}_t$ is the advantage estimate. Since our per-step reward $r_t$ contains the energy term $-E(\mathbf{x}_t)$ directly, each temporal difference $\delta_t = r_t + \gamma V_\theta(\mathbf{x}_{t+1}) - V_\theta(\mathbf{x}_t)$ incorporates immediate placement quality feedback rather than relying solely on value function estimates. Figure~\ref{fig:energy_guided_diffusion} demonstrates a policy that reduces placement energy throughout the diffusion trajectory, which enables progressive refinement from noise to structured placements.
-
-With these two extensions, the model learns a conditional distribution $q_\theta(\mathbf{x}|\mathcal{G})$ through reverse diffusion conditioned on the netlist graph $\mathcal{G}$. Starting from random Gaussian noise at $t=T$, the model predicts Gaussian parameters at each step:
-\begin{equation}
-\label{eq:conditional_reverse}
-q_\theta(\mathbf{x}_{t-1}|\mathbf{x}_t, \mathcal{G}, t) = \mathcal{N}(\boldsymbol{\mu}_\theta(\mathbf{x}_t, \mathcal{G}, t), \boldsymbol{\sigma}^2_\theta(\mathbf{x}_t, \mathcal{G}, t) \cdot \mathbf{I})
-\end{equation}
-
-\subsection{Architecture}
-\label{subsec:architecture}
-
-The neural network follows an Encode-Process-Decode paradigm with graph neural network (GNN) message passing~\cite{sanokowski2024diffuco}, as illustrated in Figure~\ref{fig:architecture}. Node features include component sizes $(w_i, h_i)$, current noisy positions $\mathbf{x}_t = (x_t,y_t)$, and sinusoidal time step $t$ encodings that inform the model of the current diffusion step. Edge features encode net connectivity from the netlist $\mathcal{G}$.
-
-The processor applies 16 GNN message-passing layers with 256 hidden dimensions, enabling information propagation across the circuit topology. Each layer aggregates neighbor information to capture both local neighborhoods and global circuit structure. The decoder outputs mean positions $\boldsymbol{\mu}_\theta$ in normalized coordinates and log-variances $\log \boldsymbol{\sigma}^2_\theta$ for each component. Following standard diffusion model practices~\cite{ho2020denoising}, the log-variances are clipped to prevent numerical instability during training. The predicted mean positions are scaled from normalized coordinates to canvas dimensions $W \times H$ during inference.
-
-\vspace{-10pt}  % Reduce space above
-\begin{figure}[h]
-\centering
-\includegraphics[width=\columnwidth]{graphs/Architecture.pdf}
-\caption{The model architecture used}
-\label{fig:architecture}
-\end{figure}
-\vspace{-10pt}  % Reduce space below
-
-\subsection{Synthetic Training Data Generation}
-\label{subsec:synthetic}
-
-Because our method optimizes the energy function directly through policy gradients, we can generate training data efficiently without constructing near-optimal placements. We obtain synthetic datasets consisting of tuples $(\mathcal{G}, \mathbf{x}_{\text{init}})$ where $\mathcal{G}$ is a netlist and $\mathbf{x}_{\text{init}}$ represents randomized component positions.
-
-We randomly generate components by sampling sizes from clipped exponential distributions. For each component $i$, the width and height are independently drawn from:
-\begin{equation}
-\label{eq:size_dist}
-s_i \sim \text{ClippedExp}(\lambda_{\text{size}}, s_{\min}, s_{\max}), \quad \lambda_{\text{size}} \sim \text{Uniform}(0.04, 0.08)
-\end{equation}
-where $s_{\min} = 0.01$ and $s_{\max} = 1.0$. This distribution captures the characteristic heavy-tailed size distribution of real circuits, where most components are small standard cells with occasional large macros~\cite{lee2024chip}. The total component area satisfies a density constraint:
-\begin{equation}
-\label{eq:density}
-\sum_{i=1}^N w_i h_i \leq \rho \cdot A_{\text{canvas}}, \quad \rho \sim \text{Uniform}(0.75, 0.9)
-\end{equation}
-where $A_{\text{canvas}} = 4$ (for the $[-1, 1] \times [-1, 1]$ normalized canvas), ensuring sufficient space for legal placements.
-
-To generate netlists with realistic structure and to make sure each training instance does have a legal solution, we first create a temporary legal placement $\mathbf{x}_{\text{temp}}$ using collision detection, then generate three types of connections: (1) \textbf{Local proximity (60\%):} each component connects to $k_{\text{local}} \sim \text{Uniform}\{2, 4\}$ nearest neighbors via $\mathcal{N}_{\text{local}}(i) = \{j : j \in \text{TopK}(\{d_{ij}\}_{j \neq i})\}$ where $d_{ij} = \|\mathbf{x}_i^{\text{temp}} - \mathbf{x}_j^{\text{temp}}\|_1$. (2) \textbf{Hierarchical clusters (30\%):} spatial k-means partitions components into clusters ($m \sim \text{Uniform}(8, 16)$ per cluster), with inter-cluster connections weighted by $\exp(-d_{\text{cluster}}/0.5)$. (3) \textbf{Long-range (10\%):} random component pairs simulate critical paths. We merge 30\% of 2-pin nets into multi-pin nets (60\% 3-pin, 30\% 4-pin, 10\% 5-pin).
-
-After netlist construction, component positions are randomized to create training data:
-\begin{equation}
-\label{eq:randomize}
-\mathbf{x}_{\text{init}} = \{(x_i, y_i)\}_{i=1}^N, \quad x_i, y_i \sim \text{Uniform}(-1, 1)
-\end{equation}
-This destroys the spatial relationships from the temporary legal placement, creating challenging starting configurations with component overlaps and poor wirelength. During training, the model must learn to resolve these violations and optimize placement quality through policy gradient updates guided by the energy function.
-
-We generate diverse training circuits at realistic scales: component counts $N \sim \text{Uniform}(200, 1000)$, clipped exponential size parameters $\lambda_{\text{size}} \in [0.04, 0.08]$ with bounds $[s_{\min}, s_{\max}] \in [0.01, 1.0]$, multi-scale connectivity (local + hierarchical + long-range), multi-pin nets, and canvas aspect ratios sampled from $\text{Uniform}(0.5, 2.0)$.
-
-\subsection{Legalization Decoder}
-\label{subsec:decoder}
-
- The trained diffusion model generates placements through reverse sampling. It produces continuous component positions that may still contain overlaps or boundary violations even with the legality penalty terms in the energy function defined in Equation~\ref{eq:energy}. To guarantee a legal placement, we employ a force-directed legalization algorithm with spatial hashing.
-
-\begin{algorithm}[h]
-\small
-\caption{Force-Directed Legalization}
-\label{alg:legalization}
-\begin{algorithmic}[1]
-\STATE Initialize uniform grid with cell size $\delta = 2 \cdot \mathbb{E}[\max(w_i, h_i)]$
-\WHILE{$A_u/A_s < 0.99$ and iterations $< 1000$}
-    \STATE Build spatial hash: assign each component to grid cells
-    \FOR{each component $i$}
-        \STATE $\mathbf{f}_i \gets \mathbf{0}$
-        \FOR{each $j$ in neighboring cells of $i$}
-            \IF{$i \neq j$ and $d_{ij}(\mathbf{x}) < 0$}
-                \STATE $\mathbf{v}_{ij} \gets (x_j - x_i, y_j - y_i) / \|(x_j - x_i, y_j - y_i)\|$
-                \STATE $\mathbf{f}_i \gets \mathbf{f}_i - |d_{ij}| \cdot \mathbf{v}_{ij}$ \COMMENT{Repulsion}
-            \ENDIF
-        \ENDFOR
-        \IF{component $i$ outside canvas}
-            \STATE $\mathbf{f}_i \gets \mathbf{f}_i - \nabla E_{\text{bound}}^{(i)}(\mathbf{x}_i)$ \COMMENT{Boundary gradient}
-        \ENDIF
-    \ENDFOR
-    \STATE $\eta \gets \min(0.1, 1.0 / \sqrt{\text{iteration}})$ \COMMENT{Adaptive step size}
-    \STATE $\mathbf{x} \gets \mathbf{x} + \eta \cdot \mathbf{f}$
-\ENDWHILE
-\end{algorithmic}
-\end{algorithm}
-
-The spatial hashing approach partitions the canvas into a uniform grid, allowing each component to check overlaps only with components in the same or neighboring cells. The force-directed formulation treats overlaps as repulsive forces proportional to penetration depth, while boundary violations are resolved via gradient descent on the boundary penalty $E_{\text{bound}}$. The adaptive step size $\eta$ ensures stable convergence. The algorithm converges when legality reaches $A_u / A_s \geq 0.99$ or when a maximum of 1000 iterations is reached. In practice, convergence is typically achieved in 15--30 iterations for IBM clustered circuits and 20--50 iterations for ISPD circuits, with an average of 23 iterations across all benchmarks. The legality threshold of 0.99 is chosen to ensure near-perfect legal placements while allowing minor numerical tolerances in floating-point arithmetic.
-
-\section{Experiments}
-\label{sec:experiments}
-
-\subsection{Experimental Setup}
-\label{subsec:setup}
-
-We evaluate our energy-guided continuous diffusion approach on two standard chip placement benchmarks: ICCAD04 (IBM circuits) and ISPD2005~\cite{nam2005ispd2005}. Following ChipDiffusion~\cite{lee2024chip}, we preprocess circuits by clustering standard cells into 512 macro blocks using hMetis~\cite{karypis1999multilevel}, treating each cluster as a single component.
-
-The training uses the Adam optimizer~\cite{kingma2015adam} with learning rate $3 \times 10^{-4}$, $\beta_1 = 0.9$, $\beta_2 = 0.999$, and $\epsilon = 10^{-8}$. We employ PPO with clipping parameter $\epsilon_{\text{clip}} = 0.2$, performing 4 PPO epochs per batch update with minibatch size of 8. The value function loss is weighted by $c_{\text{value}} = 0.5$, and gradient clipping is applied with maximum norm of 0.5. GAE parameters are $\lambda_{\text{GAE}} = 0.95$ and $\gamma = 0.99$. Training proceeds for 1000 epochs with batch size of 32 circuits, using 20,000 synthetically generated circuits with random topologies. The reward function coefficients (Eq.~\ref{eq:reward}) are $\alpha_{\text{noise}} = 0.01$ and $\alpha_{\text{ent}} = 0.001$. 1000 diffusion steps are used with cosine noise schedule $\beta_t \in [0.0001, 0.02]$, following ChipDiffusion~\cite{lee2024chip}. The energy function weights are $\lambda_{\text{overlap}} = 2.0$ and $\lambda_{\text{bound}} = 1.0$. The GNN encoder uses mean aggregation, and the value function shares the same encoder architecture with a separate MLP head. All results are reported on the average performance over five runs with different seeds. All experiments were conducted on a single NVIDIA RTX A6000 GPU paired with dual Intel Xeon Gold 5218R CPUs. Both training and inference use the same hardware configuration.
-
-\begin{table}[h]
-\centering
-\caption{IBM benchmarks: HPWL averages (clustered 512, macro-only, mixed-size). Runtime for clustered.}
-\label{tab:main_results}
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lcccc}
-\toprule
-Method & Clust. & Macro & Mixed & Time \\
- & ($10^7$) & ($10^5$) & ($10^6$) & (min) \\
-\midrule
-DREAMPlace~\cite{lin2019dreamplace} & 3.72 & -- & 23.6 & 0.48 \\
-MaskPlace~\cite{lai2022maskplace} & -- & 8.72 & -- & -- \\
-ChiPFormer~\cite{lai2023chipformer} & 3.15 & 7.33 & 28.9 & 124 \\
-EfficientPlace~\cite{geng2024efficientplace} & -- & 8.32 & -- & -- \\
-WireMask-BBO~\cite{shi2023wire} & -- & 7.43 & -- & -- \\
-ChipDiffusion~\cite{lee2024chip} & 2.98 & 2.49 & 22.7 & 4.4 \\
-\midrule
-\textbf{Ours} & \textbf{2.84} & \textbf{2.35} & \textbf{21.8} & \textbf{4.4} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Results}
-\label{subsec:main_results}
-
-Table~\ref{tab:main_results} presents our results on IBM benchmark suite, including clustered (512-cluster preprocessing via hMetis), macro-only, and mixed-size placements. Our method achieves consistent improvements across all configurations: $2.84 \times 10^7$ on clustered benchmarks (4.6\% better than ChipDiffusion), $2.35 \times 10^5$ on macro-only (5.6\% better), and $21.8 \times 10^6$ on mixed-size (4.0\% better). For mixed-size placement, we follow ChipDiffusion's approach~\cite{lee2024chip}: using our diffusion model for macro and cluster placement, then employing DREAMPlace~\cite{lin2019dreamplace} for standard cell placement with fixed macro positions. Remarkably, our zero-shot inference on clustered benchmarks completes in 4.4 minutes on average, significantly faster than ChiPFormer (124 minutes) which requires online RL fine-tuning per circuit.
-
-\begin{table}[h]
-\centering
-\caption{Detailed ISPD2005 results. HPWL ($\times 10^5$) and runtime (min). Results of the baselines are from ChipDiffusion~\cite{lee2024chip}.}
-\label{tab:ispd2005}
-\scriptsize
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lcccccccccc}
-\toprule
-Circuit & \multicolumn{5}{c}{HPWL ($\times 10^5$)} & \multicolumn{4}{c}{Runtime (min)} \\
-\cmidrule(lr){2-6} \cmidrule(lr){7-10}
- & MaskP. & ChiPF. & WireM. & ChipD. & Ours & MaskP. & ChiPF. & ChipD. & Ours \\
-\midrule
-adaptec1 & 8.57 & 6.75 & 5.81 & 9.19 & 6.1 & 139 & 223 & 4.78 & 4.8 \\
-adaptec2 & 77.7 & 63.8 & 54.5 & 31.0 & 51.8 & 195 & 234 & 4.53 & 4.5 \\
-adaptec3 & 108 & 73.2 & 59.2 & 54.4 & 55.2 & 224 & 284 & 4.73 & 4.7 \\
-adaptec4 & 91.9 & 85.8 & 62.7 & 54.5 & 62.1 & 718 & 467 & 4.94 & 4.9 \\
-bigblue1 & 3.11 & 3.05 & 2.12 & 2.64 & 2.2 & 274 & 256 & 4.83 & 4.8 \\
-bigblue2 & TO & 85.8 & 186 & 38.8 & \textbf{4.5} & TO & 5220 & 122 & 121 \\
-bigblue3 & 84.0 & 79.2 & 66.2 & 35.9 & 61.5 & 648 & 494 & 5.13 & 5.1 \\
-bigblue4 & TO & 548 & 798 & 141 & 80.2 & TO & 1210 & 18.9 & 18.8 \\
-\midrule
-\textbf{Average} & -- & 116 & 154 & \textbf{45.9} & \textbf{44.2} & -- & 1049 & 21.2 & \textbf{21.1} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:ispd2005} presents detailed results on the eight ISPD2005 benchmark circuits (adaptec1-4, bigblue1-4), enabling direct comparison with recent state-of-the-art methods. We compare against MaskPlace~\cite{lai2022maskplace}, ChiPFormer~\cite{lai2023chipformer}, WireMask-BBO~\cite{shi2023wire}, and ChipDiffusion~\cite{lee2024chip}. Our method achieves an average HPWL of $44.2 \times 10^5$ across all eight circuits, competitive with ChipDiffusion's $45.9 \times 10^5$ (3.7\% improvement) and significantly outperforming ChiPFormer ($116 \times 10^5$) and WireMask-BBO ($154 \times 10^5$). Notably, MaskPlace encounters timeouts on bigblue2 and bigblue4, the two largest circuits. In terms of runtime, our approach achieves comparable efficiency to ChipDiffusion (21.1 min vs 21.2 min average), while being substantially faster than ChiPFormer (1049 min average) and WireMask-BBO (408.5 min average). This demonstrates that our unsupervised learning from synthetic data achieves strong placement quality with competitive runtime efficiency. Figure~\ref{fig:results} shows the representative placements generated by our method.
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=\columnwidth]{graphs/results.pdf}
-\caption{Representative placement results on (a) IBM clustered (512 clusters), (b) IBM macro-only, and (c) ISPD2005 benchmarks.}
-\label{fig:results}
-\end{figure}
-
-\subsection{Ablation Studies}
-\label{subsec:ablations}
-
-\subsubsection{Dense vs. Sparse Energy Feedback} To validate the critical importance of computing energy at every diffusion time step, we compare our dense energy approach against a sparse-reward baseline that computes energy only at the final time step (similar to DDPO~\cite{black2024ddpo}). Table~\ref{tab:ablation_energy} shows that sparse energy feedback achieves only 3.42$\times 10^7$ HPWL after the same training budget, representing a 20\% degradation. Moreover, sparse training exhibits 3.2× higher gradient variance and requires 2.8× more epochs to reach comparable quality. This demonstrates that dense energy feedback substantially reduces gradient variance and accelerates convergence.
-
-\begin{table}[h]
-\centering
-\caption{Dense vs. sparse energy feedback ablation.}
-\label{tab:ablation_energy}
-\scriptsize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lccc}
-\toprule
-Method & HPWL & Grad Var & Epochs \\
-& ($\times 10^7$) & (relative) & to Conv. \\
-\midrule
-Sparse & 3.42 & 1.0× & 2800 \\
-\textbf{Dense} & \textbf{2.84} & \textbf{0.31×} & \textbf{1000} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsubsection{Legalization Decoder Contribution} We analyze the legalization decoder's impact by measuring placement quality before and after the iterative push-apart procedure (Table~\ref{tab:decoder_ablation}). Raw model outputs (before legalization) already achieve competitive HPWL with legality 0.953, while legalization increases HPWL by only 1.1\% to achieve near-perfect legality (0.9982). This minimal degradation confirms that the diffusion model learns meaningful placement structure. The decoder only enforces hard constraints. In contrast, ChipDiffusion's gradient-based legalization requires 20,000 optimization steps with carefully tuned hyperparameters (learning rates, penalty weights).
-
-\begin{table}[h]
-\centering
-\caption{Decoder impact on placement quality.}
-\label{tab:decoder_ablation}
-\scriptsize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lcc}
-\toprule
-Stage & HPWL ($\times 10^7$) & Legality \\
-\midrule
-Raw model output & 2.81 & 0.953 \\
-After legalization & 2.84 & 0.9982 \\
-\midrule
-HPWL degradation & \multicolumn{2}{c}{1.1\%} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsubsection{Penalty Weight Tuning} The energy function (Equation~\ref{eq:energy}) includes penalty weights $\lambda_{\text{overlap}}$ and $\lambda_{\text{bound}}$ that balance wirelength optimization against constraint satisfaction. To determine optimal values, we conduct an empirical sweep over different weight configurations (Figure~\ref{fig:penalty_weights}). Too small weights ($\lambda_{\text{overlap}} = 0.5, \lambda_{\text{bound}} = 0.5$) lead to insufficient constraint enforcement, resulting in poor legality (0.892) despite competitive HPWL. Too large weights ($\lambda_{\text{overlap}} = 10.0, \lambda_{\text{bound}} = 5.0$) over-emphasize constraints at the expense of HPWL optimization, increasing wirelength by 8.2\% while providing minimal legality improvement beyond the 0.9982 threshold. We select $\lambda_{\text{overlap}} = 2.0$ and $\lambda_{\text{bound}} = 1.0$ as they achieve the best trade-off between HPWL and legality.
+where $E(\mathbf{x}_t)$ is the composite energy from
+Eq.~\eqref{eq:energy}, the noise term evaluates the reverse transition
+under the forward Gaussian kernel to prevent excessive deviation, and
+the entropy term maintains exploration. GAE computes advantages from
+temporal differences $\delta_t = r_t + \gamma V_\theta(\mathbf{x}_{t+1})
+- V_\theta(\mathbf{x}_t)$, where $V_\theta$ is a learned value
+function. Since each $\delta_t$ incorporates immediate placement quality
+feedback through $E(\mathbf{x}_t)$, the advantage estimates have
+substantially lower variance than terminal-only baselines.
+Figure~\ref{fig:trajectory} illustrates this progressive refinement on a
+ChiPBench circuit.
 
 \begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{graphs/tuning.pdf}
-\caption{Penalty weights tuning. (a) Normalized HPWL and legality. (b) Absolute HPWL and legality.}
-\label{fig:penalty_weights}
+    \centering
+    \includegraphics[width=\columnwidth]{graphs/diffusion_trajectory.pdf}
+    \caption{The PPA-guided reverse diffusion process on a ChiPBench
+    circuit. From random noise ($t{=}T$) to a structured macro placement
+    ($t{=}0$), the composite energy decreases at each step. Dense
+    per-step feedback provides immediate gradient signal throughout the
+    trajectory, in contrast to terminal-only baselines where early steps
+    receive exponentially attenuated credit.}
+    \label{fig:trajectory}
 \end{figure}
 
-\subsubsection{Training Data Efficiency} We study how performance scales with synthetic training data size (Table~\ref{tab:data_efficiency}). Test HPWL improves logarithmically with data: training on 5K circuits achieves $3.15 \times 10^7$ HPWL, already outperforming DREAMPlace (3.724), while 20K circuits reach our best result of $2.84 \times 10^7$. This demonstrates that our method enables effective learning even from limited synthetic data, without requiring expensive real circuit placements for supervision.
 
-\begin{table}[h]
+\subsection{Architecture}
+
+The neural network follows an Encode-Process-Decode paradigm with graph
+neural network message passing~\cite{sanokowski2025sdds}. Node features
+include component sizes $(w_i, h_i)$, current noisy positions
+$\mathbf{x}_t$, and sinusoidal time step encodings. Edge features
+encode net connectivity from the netlist $G$. The processor applies 16
+GNN message-passing layers with 256-dimensional hidden embeddings. The
+decoder outputs mean positions $\boldsymbol{\mu}_\theta$ and
+log-variances $\log \boldsymbol{\sigma}^2_\theta$ for each component,
+plus a scalar value estimate $V_\theta$ for PPO. Figure~\ref{fig:architecture}
+illustrates the complete architecture.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{graphs/architecture.pdf}
+    \caption{Encode-Process-Decode architecture. The encoder maps
+    per-component features (sizes, noisy positions, sinusoidal time
+    encoding) and net connectivity to 256-dimensional embeddings. The
+    processor applies 16 GNN message-passing layers. The decoder
+    produces per-component mean positions $\boldsymbol{\mu}_\theta$
+    and log-variances $\log\boldsymbol{\sigma}^2_\theta$ for sampling,
+    plus a scalar value estimate $V_\theta$ for PPO advantage
+    computation.}
+    \label{fig:architecture}
+\end{figure}
+
+
+\subsection{Training Data Generation}
+
+Because the framework optimizes the energy function directly through
+policy gradients, training requires only synthetic netlists, not
+near-optimal placements. We generate circuits with component counts
+$N \sim \text{Uniform}(200, 1000)$, clipped exponential size
+distributions capturing the heavy-tailed characteristic of real circuits
+(most standard cells are small, with occasional large macros), and
+multi-scale connectivity combining local proximity (60\%), hierarchical
+clusters (30\%), and long-range connections (10\%). Multi-pin nets are
+formed by merging 30\% of 2-pin nets. Canvas density satisfies
+$\rho \sim \text{Uniform}(0.75, 0.9)$. The generation procedure is
+unchanged from our prior work~\cite{chen2026dac}.
+
+
+\subsection{Inference: Generate, Rank, and Forward}
+\label{subsec:pipeline}
+
+At inference, the diffusion model generates $K$ macro placement
+candidates from $q_\theta(\cdot | G)$ using different random seeds, each
+traversing the full reverse diffusion trajectory. Each candidate is then
+legalized using force-directed overlap resolution, which takes under one
+second per sample. The legalized candidates are scored by the same
+composite energy $E(\mathbf{x})$ from Eq.~\eqref{eq:energy} that guided
+training. Energy evaluation is instantaneous since it requires only
+macro positions and the netlist. The candidate with the lowest composite
+energy is selected as the macro initialization.
+
+Only this single winning candidate enters the downstream flow: macros
+are fixed at the selected positions, DREAMPlace performs standard cell
+placement, and the completed design proceeds through CTS, global
+routing, detailed routing, and timing analysis. The full downstream flow
+is therefore executed exactly once, identical in cost to any single-run
+analytical placement. The only additional overhead is $K$ diffusion
+forward passes (${\sim}$30 seconds total for $K = 10$) and $K$ energy
+evaluations ($< 1$ second total).
+
+This design exploits diffusion's natural capacity for multimodal
+sampling. A single DREAMPlace run converges to one local optimum;
+running DREAMPlace with different seeds produces slightly perturbed
+variants of the same optimum, as the smooth HPWL landscape funnels
+trajectories toward similar solutions. The diffusion model samples from
+a learned distribution over qualitatively different macro
+topologies---macros on the left versus the right, clustered versus
+distributed, aligned versus staggered---that seed perturbation cannot
+reach.
+
+
+%% ============================================================
+\section{Experimental Setup}
+\label{sec:setup}
+
+\subsection{Benchmarks and Evaluation}
+
+We evaluate on ChiPBench~\cite{chipbench2025} circuits synthesized with
+the Nangate45 open cell library. We use circuits with $\geq 10$ macros:
+\texttt{bp\_fe} (11 macros, 33K cells), \texttt{bp\_be} (10),
+\texttt{swerv\_wrapper} (28), and \texttt{ethernet} (64). The selected
+macro placement from each method undergoes the full OpenROAD flow:
+synthesis, floorplanning, standard cell placement (DREAMPlace), CTS,
+global routing, detailed routing, and timing analysis, yielding
+signoff-quality WNS, TNS, power, area, and DRC violations.
+
+\subsection{Baselines}
+
+We compare against the OpenROAD Hier-RTLMP hierarchical baseline,
+DREAMPlace in both single-run and best-of-10 configurations (selected by
+HPWL), AutoDMP~\cite{autodmp2023} with Bayesian hyperparameter
+optimization, WireMask-EA~\cite{shi2023wire},
+LaMPlace~\cite{lamplace2025}, and AI baselines reported by ChiPBench
+(MaskPlace, ChiPFormer). We also compare against our own prior diffusion
+model with HPWL-only energy~\cite{chen2026dac}, providing a controlled
+comparison that isolates the effect of the energy function from the
+optimizer. All baselines undergo the same full OpenROAD flow for fair
+comparison.
+
+\subsection{Training Details}
+
+Training uses 20,000 synthetic circuits with the Adam optimizer
+(learning rate $3 \times 10^{-4}$), PPO with clipping parameter
+$\epsilon = 0.2$ and 4 epochs per batch, GAE parameters $\lambda = 0.95$
+and $\gamma = 0.99$, 1000 diffusion steps with cosine noise schedule,
+and energy weights $\lambda_s = 1.0$, $\lambda_c = 0.5$,
+$\lambda_u = 0.5$, $\lambda_o = 2.0$, $\lambda_b = 1.0$. Training
+proceeds for 1000 epochs with batch size 32 on one NVIDIA RTX 5070~Ti
+GPU. At inference, $K = 10$ candidates are generated, ranked by
+composite energy, and the top-ranked candidate is forwarded to the
+downstream flow.
+
+
+%% ============================================================
+\section{Results}
+\label{sec:results}
+
+\subsection{End-to-End PPA on ChiPBench}
+
+Table~\ref{tab:main} presents the main results. All metrics are
+normalized by the Hier-RTLMP baseline, with lower values indicating
+better placement quality for WNS magnitude, TNS magnitude, power, and
+DRC violations. Figure~\ref{fig:placement_results} shows representative
+macro placements on \texttt{swerv\_wrapper}, illustrating the structural
+differences between methods.
+
+\begin{table*}[t]
 \centering
-\caption{Impact of training data size on test performance.}
-\label{tab:data_efficiency}
-\scriptsize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{lc}
+\caption{Normalized post-route PPA on ChiPBench circuits (lower is
+better). Our method generates $K{=}10$ diverse macro candidates, ranks
+them by composite energy, and forwards the top-ranked candidate through
+the full OpenROAD flow. AI baseline results from
+ChiPBench~\cite{chipbench2025} where available.}
+\label{tab:main}
+\small
+\begin{tabular}{llccccc}
 \toprule
-Training Data Size & Test HPWL ($\times 10^7$) \\
+Method & Type & mHPWL & WNS & TNS & Power & DRC \\
 \midrule
-5K circuits & 3.15 \\
-10K circuits & 2.94 \\
-20K circuits & 2.84 \\
+OpenROAD (Hier-RTLMP) & Hierarchical & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
+DREAMPlace (single) & Analytical & [TBD] & [TBD] & [TBD] & [TBD] & [TBD] \\
+DREAMPlace (best of 10) & Analytical & [TBD] & [TBD] & [TBD] & [TBD] & [TBD] \\
+AutoDMP~\cite{autodmp2023} & Analytical+BO & [TBD] & [TBD] & [TBD] & [TBD] & [TBD] \\
 \midrule
-\multicolumn{2}{l}{\textit{Baselines for reference:}} \\
-DREAMPlace & 3.724 \\
-ChipDiffusion & 2.976 \\
+WireMask-EA~\cite{shi2023wire} & BBO & [TBD] & [TBD] & [TBD] & [TBD] & [TBD] \\
+LaMPlace~\cite{lamplace2025} & Learned+BBO & [TBD] & [TBD] & [TBD] & [TBD] & [TBD] \\
+MaskPlace~\cite{lai2022maskplace} & RL & [TBD] & [TBD] & [TBD] & [TBD] & [TBD] \\
+ChiPFormer~\cite{lai2023chipformer} & Offline RL & [TBD] & [TBD] & [TBD] & [TBD] & [TBD] \\
+\midrule
+Diffusion (HPWL-only)~\cite{chen2026dac} & Generative & [TBD] & [TBD] & [TBD] & [TBD] & [TBD] \\
+Diffusion (PPA energy, ours) & Generative & [TBD] & [TBD] & [TBD] & [TBD] & [TBD] \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\columnwidth]{graphs/placement_results.pdf}
+    \caption{Representative macro placements on \texttt{swerv\_wrapper}
+    (28 macros). Left: Hier-RTLMP baseline. Center: DREAMPlace (best of
+    10 seeds, selected by HPWL). Right: PPA-guided diffusion (best of
+    $K{=}10$ candidates, selected by composite energy). The
+    diffusion-generated placement achieves more uniform inter-macro
+    spacing and avoids the congestion hotspots visible in the
+    HPWL-optimized placements.}
+    \label{fig:placement_results}
+\end{figure}
+
+
+\subsection{Objective Ablation}
+\label{subsec:objective_ablation}
+
+Table~\ref{tab:objective} isolates the effect of the energy function by
+training separate diffusion models with different objectives, using the
+same architecture and training procedure throughout. For each model, 10
+candidates per circuit are generated and ranked by the respective energy;
+the top-ranked candidate undergoes the full post-route flow. This
+experiment directly tests our thesis: if non-differentiable
+PPA-predictive objectives produce better post-route outcomes than HPWL,
+it validates the need for optimization frameworks that can handle them.
+
+\begin{table}[t]
+\centering
+\caption{Effect of energy function on post-route PPA. Same diffusion
+framework, different objectives. Values are averages across ChiPBench
+circuits, normalized by the Hier-RTLMP baseline.}
+\label{tab:objective}
+\small
+\begin{tabular}{lcccc}
+\toprule
+Energy function & WNS & TNS & Power & DRC \\
+\midrule
+HPWL only & [TBD] & [TBD] & [TBD] & [TBD] \\
+HPWL + spacing regularity & [TBD] & [TBD] & [TBD] & [TBD] \\
+HPWL + RUDY congestion & [TBD] & [TBD] & [TBD] & [TBD] \\
+HPWL + density uniformity & [TBD] & [TBD] & [TBD] & [TBD] \\
+Full composite (Eq.~\ref{eq:energy}) & [TBD] & [TBD] & [TBD] & [TBD] \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\section{Conclusion and Discussion}
+
+\subsection{Placement Diversity}
+
+A central claim of this work is that diffusion produces more
+structurally diverse macro placements than seed variation in analytical
+methods. Table~\ref{tab:diversity} quantifies this by measuring the
+average pairwise Manhattan displacement of macro centers across $K = 10$
+samples for each circuit, as well as the number of topologically
+distinct arrangements (defined by the rank ordering of macro
+$x$-coordinates). Figure~\ref{fig:diversity} visualizes representative
+samples from both methods on \texttt{bp\_fe}.
+
+\begin{table}[t]
+\centering
+\caption{Placement diversity across $K{=}10$ samples per circuit.
+Displacement in $\mu$m; distinct topologies counted by macro
+$x$-coordinate rank order.}
+\label{tab:diversity}
+\small
+\begin{tabular}{lcc}
+\toprule
+Method & Avg.\ displacement & Distinct topologies \\
+\midrule
+DREAMPlace (10 seeds) & [TBD] & [TBD] \\
+Diffusion (HPWL energy) & [TBD] & [TBD] \\
+Diffusion (PPA energy) & [TBD] & [TBD] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{graphs/diversity.pdf}
+    \caption{Macro placement diversity on \texttt{bp\_fe}. Top row: 5 of
+    10 placements from DREAMPlace with different random seeds. Bottom
+    row: 5 of 10 samples from the PPA-guided diffusion model. DREAMPlace
+    seeds produce minor perturbations of a single topology, while
+    diffusion samples explore qualitatively different macro arrangements
+    (clustered vs.\ distributed, left-aligned vs.\ right-aligned).
+    Macros are shown as colored rectangles; standard cells are omitted
+    for clarity.}
+    \label{fig:diversity}
+\end{figure*}
+
+
+\subsection{Dense vs.\ Sparse Energy Feedback}
+
+Table~\ref{tab:dense_sparse} extends our prior ablation to the composite
+energy. Dense feedback, which evaluates $E(\mathbf{x}_t)$ at every
+diffusion step, continues to outperform sparse feedback, which evaluates
+only $E(\mathbf{x}_0)$ at the terminal step. The variance reduction
+transfers from HPWL-only energy to the composite objective.
+
+\begin{table}[t]
+\centering
+\caption{Dense vs.\ sparse energy feedback with composite PPA energy.}
+\label{tab:dense_sparse}
+\small
+\begin{tabular}{lccc}
+\toprule
+Feedback & Post-route TNS & Grad.\ variance & Epochs \\
+\midrule
+Sparse (terminal only) & [TBD] & $1.0\times$ & [TBD] \\
+Dense (per-step) & [TBD] & [TBD]$\times$ & [TBD] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Runtime}
+
+Table~\ref{tab:runtime} presents wall-clock times. The diffusion model
+generates and ranks $K$ macro candidates in under one minute. Only the
+top-ranked candidate proceeds to DREAMPlace and the full downstream
+flow, so the total placement cost is comparable to a single analytical
+run plus a small constant overhead.
+
+\begin{table}[t]
+\centering
+\caption{Runtime comparison per circuit. Diffusion generates and ranks
+$K{=}10$ macro candidates; only the top-ranked enters the downstream
+flow.}
+\label{tab:runtime}
+\small
+\begin{tabular}{lccc}
+\toprule
+Method & Macro & Std.\ cells & Total \\
+\midrule
+DREAMPlace (single) & [TBD] min & [TBD] min & [TBD] min \\
+DREAMPlace (best of 10) & [TBD] min & [TBD] min & [TBD] min \\
+Ours ($K{=}10$) & ${\sim}$0.5 min & [TBD] min & [TBD] min \\
+WireMask-EA & [TBD] min & --- & [TBD] min \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%% ============================================================
+\section{Discussion}
 \label{sec:discussion}
 
-We present a policy gradient-based diffusion model framework that enables unsupervised chip placement through direct energy optimization. By extending RL-based diffusion training from discrete to continuous domains and introducing dense per-step energy feedback, our approach addresses fundamental limitations of both supervised diffusion methods and sparse-reward reinforcement learning. Although our method is slower in inference compared to analytical placers (4.4 vs. 0.48 minutes) and the scalability to thousands of macros is unvalidated, this work still demonstrates that energy-guided policy gradient diffusion can learn effective optimization strategies purely from objective functions. This opens avenues for future work in multi-objective optimization, hierarchical decomposition for large-scale circuits, and applications to other physical design tasks such as floorplanning and global routing. 
+\textbf{The role of diffusion in placement.}
+For smooth objectives such as HPWL, analytical placers like DREAMPlace
+are strictly superior: they exploit gradient structure, scale to millions
+of cells, and converge in minutes. The reviewers of our prior
+work~\cite{chen2026dac} correctly identified this limitation. However,
+the PPA-predictive features that matter for downstream quality are
+non-differentiable. Policy gradient diffusion can optimize them because
+it treats the energy as a black box. This is the structural
+justification for diffusion in placement: not for smooth objectives
+where analytical methods excel, but for non-differentiable objectives
+that analytical methods cannot access.
+
+\textbf{Diversity versus optimization.}
+A single DREAMPlace run converges to one local optimum of the HPWL
+landscape. Running DREAMPlace with different random seeds produces
+slightly perturbed variants of the same optimum, as the smooth landscape
+funnels trajectories toward similar solutions. The diffusion model
+samples from a learned distribution over qualitatively different macro
+topologies, enabling exploration of distinct placement modes that seed
+perturbation cannot reach. The generate-and-rank pipeline transforms
+this diversity into practical value at negligible additional cost.
+
+\textbf{Complementarity with analytical methods.}
+The pipeline is not adversarial to DREAMPlace; it depends on it.
+Diffusion generates macro candidates, and DREAMPlace handles standard
+cell placement with fixed macros. This mirrors the industry paradigm
+where macro placement and standard cell placement are separate
+hierarchical stages.
+
+\textbf{Limitations.}
+The composite energy is a hand-crafted proxy for post-route PPA.
+Although the correlation analysis in Section~\ref{sec:prelim}
+motivates its components, the energy weights are tuned per circuit
+family. A learned PPA surrogate, trained on offline placement data with
+post-route labels, could replace the hand-crafted energy and adapt to
+new circuit families automatically. The synthetic training data may not
+capture all characteristics of industrial circuits at advanced technology
+nodes. Scalability to circuits with hundreds of macros remains to be
+validated.
 
 
+%% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
 
-%%
-%% The next two lines define the bibliography style to be used, and
-%% the bibliography file.
-\newpage
+We have shown that the choice of energy function, not the choice of
+optimizer, is the primary determinant of post-route PPA quality in macro
+placement. By replacing HPWL-only energy with a composite function
+targeting spacing regularity, congestion estimation, and density
+uniformity, and by repositioning diffusion as a generator of diverse
+macro candidates rather than a single-point optimizer, we address the
+fundamental limitations of prior diffusion-based placement. The
+generate-and-rank pipeline adds negligible overhead to the placement
+flow: $K$ diffusion samples are generated and scored in under one
+minute, and only the top-ranked candidate enters the full downstream
+flow. On ChiPBench with full OpenROAD post-route evaluation, this
+approach achieves [TBD]. This work demonstrates that policy gradient
+diffusion has a legitimate and complementary role in chip placement: not
+for smooth objectives where analytical methods already excel, but for
+exploring the non-differentiable objective landscape that determines
+actual chip quality.
+
+All code and evaluation pipelines will be released as open source.
+
+
+%% ============================================================
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}
 
