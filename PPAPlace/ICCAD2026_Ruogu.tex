@@ -117,22 +117,17 @@ This paper investigates both questions. To address the first, a systematic study
 which stage provides training labels that best reflect post-route
 outcomes. The results reveal that pre-route timing evaluation can be
 misleading: configurations that appear timing-clean before routing
-violate timing afterward, and their ranking reverses.
-Post-global-routing evaluation, by contrast, better preserves the
-post-route ranking in our experiments at roughly one-sixth the cost of
-full routing. This finding has implications for any learning-based
-approach that relies on cross-stage supervision.
+violate timing afterward. Post-global-routing metrics, by contrast, best reflect the final post-route PPA while remaining cheap to generate. This finding has implications for any learning-based approach that relies on cross-stage supervision.
 
 To address the second question, a dual-stream predictor is proposed that
 observes the complete mixed-size placement state rather than macro
 positions alone. A graph attention network processes the netlist
-connectivity, and a spatial convolutional network processes the
+connectivity. A spatial convolutional network processes the
 placement grid, capturing standard cell density, pin distribution, and
 routing congestion estimates. Because the predictor takes any finished
 placement as input regardless of how it was produced, it is not tied to
-a specific placement algorithm. The paper demonstrates its application
-through Bayesian optimization over DREAMPlace's hyperparameter space,
-but the same predictor could guide configuration search for any
+a specific placement algorithm. This paper demonstrates its application
+through Bayesian optimization over DREAMPlace's hyperparameter space. The same predictor could guide configuration search for any
 placement method.
 
 The contributions are:
@@ -152,6 +147,8 @@ The contributions are:
     scores any finished placement, enabling candidate selection or
     configuration search across different placement paradigms.
 \end{enumerate}
+
+The remainder of this paper is organized as follows. Section~\ref{sec:related} reviews analytical, AI-based, and cross-stage prediction approaches to chip placement. Section~\ref{sec:prelim} formulates the cross-stage PPA prediction problem. Section~\ref{sec:label_fidelity} presents the label fidelity study that identifies post-global-routing as the most effective supervision stage. Section~\ref{sec:method} describes the PPAPlace framework, including the mixed-size placement representation, the dual-stream predictor architecture, and the placer-agnostic configuration optimization mechanism. Section~\ref{sec:experiments} evaluates PPAPlace on ChiPBench circuits through the full RTL-to-signoff flow. Section~\ref{sec:conclusion} concludes the paper.
 
 %% ============================================================
 \section{Related Work}
@@ -188,8 +185,8 @@ MacroRank~\cite{macrorank2023} trained a model to rank macro placements
 by routing quality but did not integrate it into a placement optimizer.
 PreRoutGNN~\cite{preroutgnn2024} predicted pre-routing timing with high
 accuracy but focused on prediction rather than using the predictions to
-improve placement. Re2MaP~\cite{re2map2024} learns to refine an initial macro placement by
-remapping positions to improve PPA, and BBOPlace-Bench~\cite{bboplacebench2024}
+improve placement. Re2MaP~\cite{re2map2025} learns to refine an initial macro placement by
+remapping positions to improve PPA, and BBOPlace-Bench~\cite{bboplacebench2025}
 provides a unified benchmark for black-box optimization approaches to
 macro placement. Both highlight the importance of aligning the search
 objective with downstream PPA rather than HPWL.
