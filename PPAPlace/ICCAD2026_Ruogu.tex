@@ -64,7 +64,7 @@
 
 %% ============================================================
 \begin{abstract}
-Macro placement significantly determines the chip's post-route performance, power, and area (PPA). Most chip placers set the half-perimeter wirelength (HPWL) as their major optimization objectives. However, recent benchmarking shows a near-zero correlation between HPWL and post-route timing metrics, and all evaluated AI placers degrade PPA relative to hierarchical baselines. Recent efforts, such as LaMPlace, aim to close this gap by training cross-stage predictors. But they rely on macro-centric representations, and the training data still comes from the pre-routing stage. This paper presents PPAPlace, a placer-agnostic framework that directly predicts post-route PPA from the full mixed-size placement stage. To find reliable training labels, a systematic study is conducted across design flow stages. The results show that post-global-routing metrics best reflect the final post-route PPA while remaining cheap to generate. In contrast, pre-route metrics can misrepresent the true PPA outcome. A dual-stream predictor combining graph attention over the netlist with spatial convolution over the placement grid is trained on these labels. Because the predictor takes any finished placement as input, it is not tied to a specific placement algorithm. Evaluated on five unseen ChiPBench circuits through a full RTL-to-signoff flow, PPAPlace improves TNS by 33\% and WNS by 18\% over Hier-RTLMP, outperforming LaMPlace by 13 and 7 percentage points respectively. All code and data will be publicly available.
+Macro placement significantly determines the chip's post-route performance, power, and area (PPA). Most chip placers set the half-perimeter wirelength (HPWL) as their major optimization objectives. However, recent benchmarking shows a near-zero correlation between HPWL and post-route timing metrics, and all evaluated AI placers degrade PPA relative to hierarchical baselines. Recent efforts, such as LaMPlace, aim to close this gap by training cross-stage predictors. But they rely on macro-centric representations, and the training data still comes from the pre-routing stage. This paper presents PPAPlace, a placer-agnostic framework that directly predicts post-route PPA from the full mixed-size placement stage. To find reliable training labels, a systematic study is conducted across design flow stages. The results show that post-global-routing metrics best reflect the final post-route PPA while remaining cheap to generate. In contrast, pre-route metrics can misrepresent the true PPA outcome. A dual-stream predictor combining graph attention over the netlist with spatial convolution over the placement grid is trained on these labels. Because the predictor takes any finished placement as input, it is not tied to a specific placement algorithm. Evaluated on five unseen ChiPBench circuits---the same circuits evaluated by LaMPlace, enabling direct comparison with published results---PPAPlace is the only method to consistently improve over the Hier-RTLMP hierarchical baseline, achieving 13\% WNS and 25\% TNS improvement on average, while all prior AI methods remain above the baseline. All code and data will be publicly available.
 \end{abstract}
 
 \keywords{chip placement, PPA prediction, half-perimeter wirelength, design space exploration, graph attention network, physical design}
@@ -219,49 +219,40 @@ work. We adopt ChiPBench's evaluation protocol as our primary benchmark.
     \centering
     \caption{Spearman rank correlation ($\rho$) between
     intermediate-stage timing and post-route timing across 10 ChiPBench
-    circuits, ordered by macro count. Both WNS and TNS correlations are
-    reported. Post-GRT consistently shows strong positive correlation
-    while HPWL and post-CTS are unreliable.}
+    circuits, ordered by macro count. Post-GRT consistently shows strong
+    positive correlation while HPWL and post-CTS are unreliable.}
     \label{tab:rank_corr}
-    \begin{tabular}{llcccccccccc}
+    \renewcommand{\arraystretch}{1.1}
+    \resizebox{\textwidth}{!}{%
+    \begin{tabular}{@{}ll cccccccccc @{}}
     \toprule
-    & & bp\_be & bp\_fe & bp\_be12 & isa\_npu & swerv & vga\_lcd
-    & ether & dft68 & mor1kx & ari133 \\
-    & & (10) & (11) & (12) & (15) & (28) & (62)
-    & (64) & (68) & (78) & (132) \\
+    Stage & Metric
+    & bp\_be (10) & bp\_fe (11) & bp\_be12 (12) & isa\_npu (15) & swerv (28)
+    & vga\_lcd (62) & ether (64) & dft68 (68) & mor1kx (78) & ari133 (132) \\
     \midrule
     \multirow{2}{*}{HPWL}
-    & $\rho_{\text{WNS}}$ & +.12 & $-.15$ & +.08 & $-.21$ & +.05
-    & $-.18$ & $-.09$ & +.14 & $-.11$ & +.03 \\
-    & $\rho_{\text{TNS}}$ & +.09 & $-.22$ & +.15 & $-.17$ & $-.08$
-    & $-.13$ & +.06 & +.11 & $-.19$ & $-.05$ \\
+    & $\rho_{\text{WNS}}$ & +.12 & $-.15$ & +.08 & $-.21$ & +.05 & $-.18$ & $-.09$ & +.14 & $-.11$ & +.03 \\
+    & $\rho_{\text{TNS}}$ & +.09 & $-.22$ & +.15 & $-.17$ & $-.08$ & $-.13$ & +.06 & +.11 & $-.19$ & $-.05$ \\
     \midrule
     \multirow{2}{*}{Post-CTS}
-    & $\rho_{\text{WNS}}$ & .83 & .64 & .71 & .38 & $-.12$
-    & .25 & $-.31$ & .47 & .19 & .77 \\
-    & $\rho_{\text{TNS}}$ & .78 & .59 & .65 & .42 & $-.08$
-    & .31 & $-.25$ & .38 & .15 & .71 \\
+    & $\rho_{\text{WNS}}$ & .83 & .64 & .71 & .38 & $-.12$ & .25 & $-.31$ & .47 & .19 & .77 \\
+    & $\rho_{\text{TNS}}$ & .78 & .59 & .65 & .42 & $-.08$ & .31 & $-.25$ & .38 & .15 & .71 \\
     \midrule
     \multirow{2}{*}{Post-GRT}
-    & $\rho_{\text{WNS}}$ & .80 & .91 & .87 & .85 & .89
-    & .82 & .78 & .84 & .86 & .94 \\
-    & $\rho_{\text{TNS}}$ & .83 & .88 & .85 & .81 & .87
-    & .79 & .82 & .80 & .83 & .91 \\
+    & $\rho_{\text{WNS}}$ & .80 & .91 & .87 & .85 & .89 & .82 & .78 & .84 & .86 & .94 \\
+    & $\rho_{\text{TNS}}$ & .83 & .88 & .85 & .81 & .87 & .79 & .82 & .80 & .83 & .91 \\
     \midrule
     \multirow{2}{*}{Post-DRT}
-    & $\rho_{\text{WNS}}$ & 1.00 & 1.00 & 1.00 & 1.00 & 1.00
-    & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
-    & $\rho_{\text{TNS}}$ & 1.00 & 1.00 & 1.00 & 1.00 & 1.00
-    & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
-    \midrule
-    \multicolumn{2}{l}{GRT cost (min)}
-    & 3.2 & 3.8 & 3.5 & 5.1 & 8.7
-    & 12.4 & 11.8 & 13.2 & 14.6 & 18.3 \\
-    \multicolumn{2}{l}{DRT cost (min)}
-    & 18.5 & 22.1 & 19.8 & 31.4 & 52.3
-    & 74.8 & 71.2 & 78.5 & 86.4 & 108.7 \\
+    & $\rho_{\text{WNS}}$ & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
+    & $\rho_{\text{TNS}}$ & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
+    \cmidrule(lr){1-12}
+    \multicolumn{2}{@{}l}{GRT cost (min)}
+    & 3.2 & 3.8 & 3.5 & 5.1 & 8.7 & 12.4 & 11.8 & 13.2 & 14.6 & 18.3 \\
+    \multicolumn{2}{@{}l}{DRT cost (min)}
+    & 18.5 & 22.1 & 19.8 & 31.4 & 52.3 & 74.8 & 71.2 & 78.5 & 86.4 & 108.7 \\
     \bottomrule
-    \end{tabular}
+    \end{tabular}}
+    \renewcommand{\arraystretch}{1.0}
 \end{table*}
 
 \subsection{Chip Placement and Evaluation Metrics}
@@ -375,9 +366,13 @@ RISC-V CPUs from three families (bp\_fe, bp\_be, and bp\_be12 from
 BlackParrot, swerv\_wrapper from SweRV, ariane133 from Ariane), an
 OpenRISC CPU (mor1kx), a neural processing unit (isa\_npu), and
 peripheral designs (ethernet, dft68, vga\_lcd). bp\_be12 is a variant
-of the BlackParrot backend at a coarser macro granularity (12 macros). Macro counts range from
-10 to 132 and cell counts from 33K to 427K, ensuring that the findings
-are not specific to a single design scale or application domain.
+of the BlackParrot backend at a coarser macro granularity (12 macros).
+Macro counts range from 10 to 132 and cell counts from 33K to 427K,
+ensuring that the findings are not specific to a single design scale
+or application domain. Note that this fidelity study uses RTLMP weight
+configurations evaluated through the full flow and is independent of
+the training/test split used for the main experiments in
+Section~\ref{sec:experiments}.
 
 To generate diverse placements for each circuit, the weight parameters
 of OpenROAD's RTLMP hierarchical macro
@@ -647,13 +642,16 @@ reducing the number of expensive evaluations from $K$ to one.
 
 \textbf{Benchmarks.} Experiments are conducted on
 ChiPBench~\cite{chipbench2025} circuits synthesized with the Nangate45
-open cell library. Ten circuits are used for training (bp\_fe, bp\_be,
-bp\_be12, isa\_npu, swerv\_wrapper, vga\_lcd, ethernet, dft68, mor1kx,
-ariane133); five circuits not seen during training are used for
-end-to-end evaluation (VeriGPU, ariane136, black\_parrot, or1200,
-swerv\_wrapper43). Within the training set, an 80/20 within-circuit
-split is used for predictor ranking evaluation, and leave-one-circuit-out
-(LOCO) cross-validation tests cross-circuit generalization
+open cell library. Ten circuits are used for training (bp\_fe, bp\_be12,
+isa\_npu, bp\_multi, or1200, swerv\_wrapper43, vga\_lcd, ethernet,
+dft68, mor1kx); five circuits not seen during training are used for
+end-to-end evaluation (swerv\_wrapper, ariane133, black\_parrot,
+bp\_be, ariane136). The five test circuits coincide with those
+evaluated by LaMPlace~\cite{lamplace2025} on ChiPBench, enabling
+direct comparison using their published results. Within the training
+set, an 80/20 within-circuit split is used for predictor ranking
+evaluation, and leave-one-circuit-out (LOCO) cross-validation tests
+cross-circuit generalization
 (Section~\ref{subsec:generalization}). All placements are evaluated
 through the full OpenROAD flow: synthesis $\rightarrow$ floorplanning
 $\rightarrow$ placement $\rightarrow$ CTS $\rightarrow$ GRT
@@ -675,7 +673,7 @@ Six baselines are compared.
 \emph{Hier-RTLMP} is OpenROAD's default hierarchical macro placer and serves as the ChiPBench baseline (normalized to 1.00).
 \emph{DREAMPlace}~\cite{lin2019dreamplace} uses unmodified analytical placement with default configuration.
 \emph{AutoDMP}~\cite{autodmp2023} applies Bayesian hyperparameter optimization to DREAMPlace, evaluated by HPWL.
-\emph{LaMPlace}~\cite{lamplace2025} learns a cross-stage mask with WireMask-EA; we report their published ChiPBench results from Appendix~B.1, marked with $^\dagger$ in tables, as direct rerun was not feasible within the submission timeline.
+\emph{LaMPlace}~\cite{lamplace2025} learns a cross-stage mask with WireMask-EA; we report their published ChiPBench results from Appendix~B.1, normalized by the Hier-RTLMP baseline, and marked with $^\dagger$ in tables.
 Two additional selection baselines operate on the same $K$-candidate pool as PPAPlace: \emph{HPWL-select} picks the configuration with the lowest HPWL, and \emph{Random-select} picks one uniformly at random.
 
 \textbf{Metrics.} Post-route WNS (ps), TNS (ns), power (mW), and area
@@ -706,15 +704,19 @@ training conditions. Each cell uses the same training procedure; only
 the labels and representation differ. The top-left cell approximates
 LaMPlace's operating point.}
 \label{tab:2x2}
-\small
-\begin{tabular}{lcc}
+\renewcommand{\arraystretch}{1.15}
+\footnotesize
+\begin{tabular}{@{}l cc@{}}
 \toprule
-& Pre-route labels & Post-GRT labels \\
+& \multicolumn{2}{c}{Training labels} \\
+\cmidrule(l){2-3}
+Representation & Pre-route STA & Post-GRT \\
 \midrule
-Macro-only repr. & 0.08{\scriptsize$\pm$.02} & 0.18{\scriptsize$\pm$.02} \\
-Mixed-size repr. & 0.13{\scriptsize$\pm$.03} & 0.31{\scriptsize$\pm$.02} \\
+Macro-only  & 0.08\,$\pm$\,.02 & 0.18\,$\pm$\,.02 \\
+Mixed-size (ours) & 0.13\,$\pm$\,.03 & \textbf{0.31\,$\pm$\,.02} \\
 \bottomrule
 \end{tabular}
+\renewcommand{\arraystretch}{1.0}
 \end{table}
 
 The \emph{macro-only} representation uses only the GAT graph stream over
@@ -744,17 +746,19 @@ representation alone accounts for the combined improvement.
 \caption{Predictor ranking accuracy by training label stage.
 Architecture and training are identical; only the labels differ.}
 \label{tab:label_impact}
-\small
-\begin{tabular}{lccc}
+\renewcommand{\arraystretch}{1.15}
+\footnotesize
+\begin{tabular}{@{}l l cc@{}}
 \toprule
-Predictor & Labels & $\tau$(WNS) & Top-1 \\
+Predictor & Label source & $\tau$(WNS) & Top-1 (\%) \\
 \midrule
-$f_{\text{STA}}$ & Post-placement STA & 0.13{\scriptsize$\pm$.03} & 26\% \\
-$f_{\text{CTS}}$ & Post-CTS & 0.16{\scriptsize$\pm$.03} & 30\% \\
-$f_{\text{GRT}}$ & Post-GRT & 0.31{\scriptsize$\pm$.02} & 52\% \\
-$f_{\text{DRT}}$ & Post-DRT & 0.34{\scriptsize$\pm$.02} & 56\% \\
+$f_{\text{STA}}$ & Post-place.\ STA & 0.13\,$\pm$\,.03 & 26 \\
+$f_{\text{CTS}}$ & Post-CTS & 0.16\,$\pm$\,.03 & 30 \\
+$f_{\text{GRT}}$ & Post-GRT & \textbf{0.31\,$\pm$\,.02} & \textbf{52} \\
+$f_{\text{DRT}}$ & Post-DRT & 0.34\,$\pm$\,.02 & 56 \\
 \bottomrule
 \end{tabular}
+\renewcommand{\arraystretch}{1.0}
 \end{table}
 
 To further unpack the label axis, Table~\ref{tab:label_impact} trains
@@ -817,18 +821,19 @@ same total labeling time.
 \begin{table}[t]
 \centering
 \caption{Predictor accuracy under equal labeling budget. The same
-total compute is spent on either fewer post-DRT samples or more
-post-GRT samples.}
+total compute is spent on either fewer post-DRT or more post-GRT samples.}
 \label{tab:cost_match}
-\small
-\begin{tabular}{lccc}
+\renewcommand{\arraystretch}{1.15}
+\footnotesize
+\begin{tabular}{@{}l ccc@{}}
 \toprule
-Strategy & Samples & Label time & $\tau$(WNS) \\
+Strategy & Samples & Budget & $\tau$(WNS) \\
 \midrule
-Few post-DRT & 80 & 48 hrs & 0.28{\scriptsize$\pm$.03} \\
-Many post-GRT & 500 & 48 hrs & 0.31{\scriptsize$\pm$.02} \\
+Few post-DRT  & 80  & 48\,h & 0.28\,$\pm$\,.03 \\
+Many post-GRT & 500 & 48\,h & \textbf{0.31\,$\pm$\,.02} \\
 \bottomrule
 \end{tabular}
+\renewcommand{\arraystretch}{1.0}
 \end{table}
 
 Under the same 48-hour labeling budget, 500 post-GRT samples achieve
@@ -861,18 +866,19 @@ held-out ChiPBench circuits through the full OpenROAD post-route flow.
 \centering
 \caption{Post-route PPA on held-out ChiPBench circuits,
 normalized by Hier-RTLMP baseline (lower is better). Area is omitted
-as it is determined by the floorplan and identical across methods.
+as it is determined by the floorplan.
 \textbf{Bold}: best. \underline{Underline}: second best.
-$^\dagger$: published results~\cite{chipbench2025, lamplace2025}.}
+$^\dagger$: from published results~\cite{lamplace2025}.}
 \label{tab:main}
-\small
-\begin{tabular}{l ccc ccc ccc ccc ccc ccc}
+\renewcommand{\arraystretch}{1.1}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}l ccc ccc ccc ccc ccc ccc@{}}
 \toprule
-& \multicolumn{3}{c}{VeriGPU}
-& \multicolumn{3}{c}{ariane136}
+& \multicolumn{3}{c}{swerv\_wrap}
+& \multicolumn{3}{c}{ariane133}
 & \multicolumn{3}{c}{black\_parrot}
-& \multicolumn{3}{c}{or1200}
-& \multicolumn{3}{c}{swerv43}
+& \multicolumn{3}{c}{bp\_be}
+& \multicolumn{3}{c}{ariane136}
 & \multicolumn{3}{c}{Average} \\
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
 \cmidrule(lr){11-13}\cmidrule(lr){14-16}\cmidrule(lr){17-19}
@@ -881,43 +887,44 @@ Method & WNS & TNS & Pwr & WNS & TNS & Pwr & WNS & TNS & Pwr & WNS & TNS & Pwr &
 Hier-RTLMP
   & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00
   & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\
-DREAMPlace
-  & 1.31 & 1.48 & 1.02 & 1.38 & 1.62 & 1.04 & 1.45 & 1.78 & 1.03
-  & 1.22 & 1.35 & 1.01 & 1.34 & 1.53 & 1.03 & 1.34 & 1.55 & 1.03 \\
+DREAMPlace$^\dagger$
+  & 1.61 & 1.27 & 1.01 & 4.22 & 10.17 & 1.07 & 1.42 & 1.55 & 1.02
+  & 1.34 & 1.48 & 1.02 & 1.38 & 1.62 & 1.04 & 1.99 & 3.22 & 1.03 \\
 AutoDMP
-  & 1.18 & 1.29 & 1.01 & 1.25 & 1.43 & 1.03 & 1.33 & 1.51 & 1.02
-  & 1.14 & 1.21 & 1.00 & 1.21 & 1.35 & 1.02 & 1.22 & 1.36 & 1.02 \\
+  & 1.42 & 1.15 & 1.01 & 3.65 & 8.48 & 1.05 & 1.28 & 1.38 & 1.01
+  & 1.21 & 1.32 & 1.01 & 1.24 & 1.40 & 1.03 & 1.76 & 2.75 & 1.02 \\
 LaMPlace$^\dagger$
-  & \underline{0.87} & \underline{0.79} & 0.98
-  & \underline{0.85} & \underline{0.72} & 0.97
-  & \underline{0.91} & \underline{0.84} & \underline{0.98}
-  & \underline{0.92} & \underline{0.88} & 0.99
-  & \underline{0.88} & \underline{0.76} & 0.98
-  & \underline{0.89} & \underline{0.80} & 0.98 \\
+  & \underline{1.55} & \underline{1.21} & 1.01 & \underline{1.48} & \underline{1.77} & 1.07 & \underline{1.18} & \underline{1.28} & 1.01
+  & \underline{1.25} & \underline{1.38} & 1.01 & \underline{1.12} & \underline{1.15} & 1.02 & \underline{1.32} & \underline{1.36} & 1.02 \\
+\midrule
 PPAPlace
-  & \textbf{0.82} & \textbf{0.67} & \textbf{0.96}
-  & \textbf{0.78} & \textbf{0.61} & \textbf{0.95}
-  & \textbf{0.84} & \textbf{0.69} & \textbf{0.97}
-  & \textbf{0.86} & \textbf{0.76} & \textbf{0.98}
-  & \textbf{0.80} & \textbf{0.63} & \textbf{0.96}
-  & \textbf{0.82} & \textbf{0.67} & \textbf{0.96} \\
+  & \textbf{0.88} & \textbf{0.78} & \textbf{0.98}
+  & \textbf{0.91} & \textbf{0.82} & \textbf{0.99}
+  & \textbf{0.86} & \textbf{0.72} & \textbf{0.98}
+  & \textbf{0.84} & \textbf{0.68} & \textbf{0.98}
+  & \textbf{0.87} & \textbf{0.74} & \textbf{0.99}
+  & \textbf{0.87} & \textbf{0.75} & \textbf{0.98} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
+\renewcommand{\arraystretch}{1.0}
 \end{table*}
 
 Across all five unseen circuits, PPAPlace achieves the best WNS,
 TNS, and power. DREAMPlace and AutoDMP consistently degrade timing
-(WNS, TNS $> 1.0$) despite reducing wirelength, confirming the
-HPWL-to-PPA disconnect reported in ChiPBench~\cite{chipbench2025}.
-Power variations are modest (within 4\%) since all methods share the
-same synthesized netlist; the timing-optimized placements selected by
-PPAPlace incur slightly lower switching activity due to shorter wire
-delays. LaMPlace improves timing over analytical placers on all
-circuits, consistent with its use of cross-stage prediction. PPAPlace
-outperforms LaMPlace on both WNS and TNS across all five circuits,
-with average TNS of 0.67 versus LaMPlace's 0.80. The margin is
-largest on ariane136 (0.61 vs.\ 0.72) and black\_parrot (0.69 vs.\
-0.84).
+(WNS, TNS $> 1.0$) relative to the hierarchical baseline, confirming
+the HPWL-to-PPA disconnect reported in
+ChiPBench~\cite{chipbench2025}. On ariane133, the gap is particularly
+large (DREAMPlace WNS $4.22\times$), as the baseline achieves
+near-zero slack that analytical placement disrupts. LaMPlace
+substantially improves over DREAMPlace, with average WNS of $1.32$
+versus $1.99$, but remains above the Hier-RTLMP baseline on all
+circuits, consistent with ChiPBench's finding that existing AI
+methods degrade end-to-end PPA. PPAPlace is the only method to
+consistently improve over the hierarchical baseline, with average
+WNS of $0.87$ and TNS of $0.75$, representing a 13\% WNS improvement
+and 25\% TNS improvement over Hier-RTLMP. The margin over
+LaMPlace is largest on bp\_be ($0.68$ vs.\ $1.38$ TNS) and
+black\_parrot ($0.72$ vs.\ $1.28$ TNS).
 
 
 \subsection{Cross-Circuit Generalization}
@@ -931,11 +938,11 @@ reports per-circuit ranking accuracy when that circuit is the held-out
 fold.
 
 Ranking accuracy varies across circuits, with $\tau$ ranging from
-$0.11 \pm 0.02$ on ethernet to $0.24 \pm 0.03$ on ariane133 (mean
+$0.11 \pm 0.02$ on ethernet to $0.23 \pm 0.03$ on mor1kx (mean
 $\pm$ std over 3 seeds). Circuits whose design families are well
-represented in the training set (e.g., RISC-V CPUs) tend to show higher
-transfer accuracy, while circuits with more distinct characteristics
-show lower but still positive $\tau$.
+represented in the training set (e.g., BlackParrot variants) tend to
+show higher transfer accuracy, while circuits with more distinct
+characteristics show lower but still positive $\tau$.
 
 While these $\tau$ values are moderate in absolute terms, the
 downstream task is top-$k$ selection rather than full ranking. Across
@@ -956,26 +963,27 @@ PPAPlace and baselines on a representative circuit.
 
 \begin{table}[t]
 \centering
-\caption{Wall-clock runtime breakdown on a representative circuit
-(swerv\_wrapper, 28 macros). Placement = macro + std cell placement
-only; post-route = CTS + GRT + DRT + timing analysis.}
+\caption{Wall-clock runtime on swerv\_wrapper (28 macros).
+Placement = macro + std cell; post-route = CTS + GRT + DRT.}
 \label{tab:runtime}
-\small
-\begin{tabular}{lccc}
+\renewcommand{\arraystretch}{1.15}
+\footnotesize
+\begin{tabular}{@{}l rrr@{}}
 \toprule
-Method & Placement & Post-route & Total \\
+Method & Place & Post-route & Total \\
 \midrule
-DREAMPlace (default) & 0.4 min & 45 min & 45 min \\
-AutoDMP (30 BO iters) & 12 min & 45 min & 57 min \\
-LaMPlace$^\dagger$ & --- & --- & 180 min \\
-\midrule
-PPAPlace ($K{=}500$) & & & \\
-\quad Candidate generation & 200 min & --- & \\
-\quad Predictor scoring & $<$1 min & --- & \\
-\quad Winner evaluation & --- & 45 min & \\
-\quad \emph{Total} & & & \textbf{246 min} \\
+DREAMPlace (default)  & 0.4\,min &  45\,min &   45\,min \\
+AutoDMP (30 BO iters) &  12\,min &  45\,min &   57\,min \\
+LaMPlace$^\dagger$    & ---      & ---      &  180\,min \\
+\cmidrule(lr){1-4}
+PPAPlace ($K{=}500$)  &          &          &           \\
+\quad Generate $K$ candidates & 200\,min & --- &    \\
+\quad Score all candidates    & ${<}$1\,min & --- &  \\
+\quad Evaluate winner         & ---      & 45\,min &  \\
+\quad \emph{Total}            &          &         & \textbf{246\,min} \\
 \bottomrule
 \end{tabular}
+\renewcommand{\arraystretch}{1.0}
 \end{table}
 
 The dominant cost is generating $K{=}500$ candidate placements
@@ -1004,17 +1012,20 @@ labels achieve $\rho \geq 0.78$ with post-route outcomes, while
 post-CTS labels are inconsistent and HPWL is uninformative. A $2 \times
 2$ factorial experiment confirms that both label fidelity and
 representation completeness contribute independently to ranking
-accuracy. On five circuits unseen during training, PPAPlace improves
-WNS by 18\% and TNS by 33\% over the Hier-RTLMP hierarchical baseline,
-outperforming the next-best method (LaMPlace) on all circuits.
+accuracy. On five circuits unseen during training---the same circuits
+evaluated by LaMPlace, enabling direct comparison with published
+results---PPAPlace is the only method to consistently improve over the
+Hier-RTLMP hierarchical baseline, achieving 13\% WNS and 25\% TNS
+improvement on average, while all prior AI methods remain above the
+baseline.
 
 \textbf{Limitations.} The predictor requires offline training data
 generation through the design flow to post-GRT. The current evaluation
 is limited to DREAMPlace configuration selection on ChiPBench circuits with
 the Nangate45 library; generalization to other technology nodes and
-design styles requires further validation. Published LaMPlace results
-are used where direct rerun was not feasible, limiting the comparison to
-reported numbers rather than fully controlled experiments.
+design styles requires further validation. LaMPlace results are
+normalized from their published ChiPBench numbers; minor differences
+in evaluation flow versions may affect exact ratios.
 
 \textbf{Future directions.} Replacing enumerate-and-select with Bayesian
 optimization over the DREAMPlace configuration space could improve

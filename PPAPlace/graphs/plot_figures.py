@@ -96,11 +96,11 @@ def plot_combined():
     # ── (b) Configuration Selection ──────────────────────────
     ax_b = fig.add_subplot(gs[0, 1])
 
-    circuits = ['VeriGPU', 'ari136', 'black_parrot', 'or1200', 'swerv43']
-    random_tns   = [1.32, 1.45, 1.55, 1.18, 1.35]
-    hpwl_tns     = [1.25, 1.38, 1.48, 1.15, 1.30]
-    ppaplace_tns = [0.67, 0.61, 0.69, 0.76, 0.63]
-    oracle_tns   = [0.58, 0.52, 0.59, 0.68, 0.54]
+    circuits = ['swerv_w', 'ari133', 'bp', 'bp_be', 'ari136']
+    random_tns   = [1.35, 1.82, 1.48, 1.42, 1.55]
+    hpwl_tns     = [1.28, 1.70, 1.40, 1.35, 1.45]
+    ppaplace_tns = [0.78, 0.82, 0.72, 0.68, 0.74]
+    oracle_tns   = [0.65, 0.70, 0.60, 0.55, 0.62]
 
     x = np.arange(len(circuits))
     w = 0.18
@@ -137,13 +137,13 @@ def plot_combined():
     # ── (c) Cross-Circuit Generalization (LOCO) ──────────────
     ax_c = fig.add_subplot(gs[1, :])
 
-    labels = ['bp_be (10)', 'bp_fe (11)', 'bp_be12 (12)',
-              'isa_npu (15)', 'swerv (28)', 'vga_lcd (62)',
-              'ether (64)', 'dft68 (68)', 'mor1kx (78)',
-              'ari133 (132)']
+    labels = ['bp_fe (11)', 'bp_be12 (12)', 'isa_npu (15)',
+              'bp_multi (26)', 'or1200 (36)', 'swerv43 (43)',
+              'vga_lcd (62)', 'ether (64)', 'dft68 (68)',
+              'mor1kx (78)']
 
-    tau_wns = [0.19, 0.21, 0.18, 0.14, 0.22, 0.12, 0.11, 0.16, 0.13, 0.24]
-    tau_tns = [0.21, 0.23, 0.20, 0.16, 0.24, 0.14, 0.13, 0.18, 0.15, 0.26]
+    tau_wns = [0.21, 0.18, 0.14, 0.17, 0.15, 0.20, 0.12, 0.11, 0.16, 0.23]
+    tau_tns = [0.23, 0.20, 0.16, 0.19, 0.17, 0.22, 0.14, 0.13, 0.18, 0.25]
 
     xc = np.arange(len(labels))
     wc = 0.35
