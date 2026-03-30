@@ -11,10 +11,10 @@
 
 @inproceedings{lu2015eplace,
   author    = {Jingwei Lu and Pengwen Chen and Chin-Chih Chang and Lu Sha and Dennis Jen-Hsin Huang and Chin-Chi Teng and Chung-Kuan Cheng},
-  title     = {{ePlace}: Electrostatics-Based Placement Using Fast {Nesterov's} Method},
-  booktitle = {Proceedings of the IEEE/ACM International Conference on Computer-Aided Design (ICCAD)},
+  title     = {{ePlace}: Electrostatics Based Placement Using {Nesterov's} Method},
+  booktitle = {Proceedings of the 51st Annual Design Automation Conference (DAC)},
   year      = {2014},
-  pages     = {404--411}
+  pages     = {1--6}
 }
 
 @article{cheng2019replace,
@@ -63,7 +63,7 @@
 }
 
 @article{kahng2023reevaluating,
-  author    = {Andrew B. Kahng},
+  author    = {Igor L. Markov},
   title     = {Reevaluating {Google's} Reinforcement Learning for {IC} Macro Placement},
   journal   = {Communications of the ACM},
   volume    = {67},
@@ -106,7 +106,7 @@
 }
 
 @inproceedings{maskregulate2024,
-  author    = {Yunqi Shi and Ke Xue and Chao Qian},
+  author    = {Ke Xue and Ruo-Tong Chen and Xi Lin and Yunqi Shi and Shixiong Kai and Siyuan Xu and Chao Qian},
   title     = {Reinforcement Learning Policy as Macro Regulator Rather than Macro Placer},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
   volume    = {37},
@@ -122,10 +122,10 @@
 }
 
 @inproceedings{lee2024chip,
-  author    = {Vint Lee and Chun Deng and Leena Elzeiny and Pieter Abbeel and John Wawrzynek},
-  title     = {Chip Placement with Diffusion},
-  journal   = {arXiv preprint arXiv:2407.12282},
-  year      = {2024}
+  author    = {Vint Lee and Minh Nguyen and Leena Elzeiny and Chun Deng and Pieter Abbeel and John Wawrzynek},
+  title     = {Chip Placement with Diffusion Models},
+  booktitle = {Proceedings of the 42nd International Conference on Machine Learning (ICML)},
+  year      = {2025}
 }
 
 % ===== Cross-Stage PPA Prediction =====
@@ -145,24 +145,27 @@
 }
 
 @inproceedings{preroutgnn2024,
-  author    = {Ruizhe Zhong and Junjie Ye and Zhihui Deng and Zizheng Guo and Yibo Lin},
-  title     = {{PreRoutGNN}: Pre-Routing Timing Prediction Using Graph Neural Networks},
+  author    = {Ruizhe Zhong and Junjie Ye and Zhentao Tang and Shixiong Kai and Mingxuan Yuan and Jianye Hao and Junchi Yan},
+  title     = {{PreRoutGNN} for Timing Prediction with Order Preserving Partition: Global Circuit Pre-Training, Local Delay Learning and Attentional Cell Modeling},
   booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume    = {38},
+  number    = {15},
+  pages     = {17087--17095},
   year      = {2024}
 }
 
-@inproceedings{re2map2024,
-  author    = {Siyuan Xu and Jie Wang and Zijie Geng and Mingxuan Yuan and Jianye Hao},
-  title     = {{Re2MaP}: Learning to Remap Macro Placement for Better PPA},
-  booktitle = {ACM/IEEE Design Automation Conference (DAC)},
-  year      = {2024}
+@inproceedings{re2map2025,
+  author    = {Yunqi Shi and Xi Lin and Siyuan Xu and Shixiong Kai and Ke Xue and Mingxuan Yuan and Chao Qian and Zhi-Hua Zhou},
+  title     = {{ReMaP}: Macro Placement by Recursively Prototyping and Periphery-Guided Relocating},
+  booktitle = {Proceedings of the 62nd ACM/IEEE Design Automation Conference (DAC)},
+  year      = {2025}
 }
 
-@inproceedings{bboplacebench2024,
-  author    = {Yunqi Shi and Ke Xue and Lei Song and Chao Qian},
-  title     = {{BBOPlace-Bench}: A Benchmark for Black-Box Optimization Based Macro Placement},
-  booktitle = {IEEE/ACM International Conference on Computer-Aided Design (ICCAD)},
-  year      = {2024}
+@article{bboplacebench2025,
+  author    = {Ke Xue and Ruo-Tong Chen and Rong-Xi Tan and Xi Lin and Yunqi Shi and Siyuan Xu and Mingxuan Yuan and Chao Qian},
+  title     = {{BBOPlace-Bench}: Benchmarking Black-Box Optimization for Chip Placement},
+  journal   = {IEEE Transactions on Evolutionary Computation},
+  year      = {2025}
 }
 
 % ===== Benchmarks =====
@@ -172,6 +175,17 @@
   title     = {{ChiPBench}: Benchmarking End-to-End Performance of {AI}-Based Chip Placement Algorithms},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS), Datasets and Benchmarks Track},
   year      = {2025}
+}
+
+% ===== OpenROAD =====
+
+@inproceedings{ajayi2019openroad,
+  author    = {Tutu Ajayi and Vidya A. Chhabria and Mateus Foga\c{c}a and Sujeet Hashemi and Abdelrahman Hosny and Andrew B. Kahng and Mingyu Kim and Jeongsup Lee and Uday Mallappa and Marina Neseem and Geraldo Pradipta and Sherief Reda and Mehdi Saligane and Sachin S. Sapatnekar and Carl Sechen and Mohamed Shalan and William Swartz and Lukas Wang and Zhehui Wang and Mingfei Yu and Daijoon Hyun},
+  title     = {Toward an Open-Source Digital Flow: First Learnings from the {OpenROAD} Project},
+  booktitle = {Proceedings of the 56th Annual Design Automation Conference (DAC)},
+  year      = {2019},
+  pages     = {1--4},
+  publisher = {ACM}
 }
 
 % ===== Commercial Tools =====
@@ -212,19 +226,21 @@
 % ===== Congestion =====
 
 @inproceedings{rudy,
-  author    = {Peter Hartman and others},
-  title     = {{RUDY}: Rectangular Uniform Wire Density},
-  note      = {Standard congestion estimation technique in VLSI placement},
-  year      = {2005}
+  author    = {Peter Spindler and Frank M. Johannes},
+  title     = {Fast and Accurate Routing Demand Estimation for Efficient Routability-Driven Placement},
+  booktitle = {Design, Automation and Test in Europe Conference (DATE)},
+  year      = {2007},
+  pages     = {1--6}
 }
 
 % ===== CP-SAT =====
 
 @misc{cpsat2023,
-  author    = {Laurent Perron and Vincent Furnon},
-  title     = {{OR-Tools CP-SAT} Solver},
+  author    = {Laurent Perron and Fr\'{e}d\'{e}ric Didier},
+  title     = {{CP-SAT} Solver},
   howpublished = {\url{https://developers.google.com/optimization/cp/cp_solver}},
-  year      = {2023}
+  year      = {2023},
+  note      = {Part of {Google OR-Tools}}
 }
 
 @article{hsu2013wa,
@@ -248,4 +264,13 @@
   number  = {3},
   pages   = {543--547},
   year    = {1983}
+}
+
+@inproceedings{bergstra2011tpe,
+  author    = {James Bergstra and R{\'e}mi Bardenet and Yoshua Bengio and Bal{\'a}zs K{\'e}gl},
+  title     = {Algorithms for Hyper-Parameter Optimization},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  volume    = {24},
+  year      = {2011},
+  pages     = {2546--2554}
 }
