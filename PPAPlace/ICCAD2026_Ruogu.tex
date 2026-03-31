@@ -220,16 +220,11 @@ approximations such as the weighted-average
 model~\cite{hsu2013wa}), decomposable across nets, and fast to compute.
 
 However, the actual quality of a placed design is determined by
-post-route PPA metrics obtained by executing the downstream design
-flow after placement. This flow proceeds through three stages of
-increasing accuracy: \textbf{clock tree synthesis (CTS)}
-constructs a balanced clock distribution network with buffers to meet
-setup timing; \textbf{global routing (GRT)} assigns nets to coarse
-routing regions, introducing congestion-dependent wire delay estimates;
-and \textbf{detailed routing (DRT)} assigns exact metal tracks and
-vias, producing signoff-quality metrics. Given a placement
-$\mathbf{x}$, let $\mathrm{Flow}(\mathbf{x})$ denote the full flow
-and $\mathrm{Flow}_s(\mathbf{x})$ the flow truncated at stage $s$:
+post-route PPA metrics obtained after executing the downstream flow:
+clock tree synthesis (CTS), global routing (GRT), and detailed routing
+(DRT), each adding fidelity to timing and congestion estimates. Let
+$\mathrm{Flow}(\mathbf{x})$ denote the full flow and
+$\mathrm{Flow}_s(\mathbf{x})$ the flow truncated at stage $s$:
 \begin{equation}
 \label{eq:ppa}
 \mathbf{y} = \mathrm{Flow}(\mathbf{x})
@@ -241,11 +236,9 @@ and $\mathrm{Flow}_s(\mathbf{x})$ the flow truncated at stage $s$:
 \mathbf{y}_s = \mathrm{Flow}_s(\mathbf{x}), \quad
 s \in \{\text{CTS},\; \text{GRT},\; \text{DRT}\}
 \end{equation}
-where WNS is the worst negative slack (the most critical timing
-violation), TNS is the total negative slack (sum of all violations),
-and power and area are the total power consumption and physical
-footprint. Computing $\mathbf{y}$ requires running the full flow,
-which typically takes tens of minutes to hours per design.
+where WNS is the worst negative slack, TNS is the total negative slack,
+and power and area are total power consumption and physical footprint.
+Computing $\mathbf{y}$ typically takes tens of minutes to hours.
 
 The goal of a cross-stage PPA predictor is to learn
 $f_\theta(\mathbf{x}) \approx \mathbf{y}_{\text{DRT}}$ from
@@ -361,19 +354,18 @@ one-sixth of full DRT across all circuits tested.
 
 \subsection{Implications}
 
-The consistent pattern across 10 circuits spanning 10 to 132 macros,
+The pattern is consistent across 10 circuits spanning 10 to 132 macros,
 33K to 427K cells, and five design categories (CPUs, NPU,
-networking, DFT, display) demonstrates that post-global-routing is the
-most cost-effective label stage for cross-stage PPA prediction.
-Post-GRT evaluation achieves consistently high rank correlation with
-post-route outcomes at roughly one-sixth the runtime of full detailed
-routing. Labels from stages before global routing, including the
-pre-route static timing used by existing
-methods~\cite{lamplace2025}, fall in the range where ranking
-disagreement with post-route outcomes is observed. While the severity
-may vary across technology nodes and design styles, these findings
-suggest that validation against post-route outcomes is necessary when
-choosing a label source for cross-stage prediction.
+networking, DFT, display): post-GRT is the most cost-effective label
+stage for cross-stage PPA prediction, achieving $\rho \geq 0.78$ at
+roughly one-sixth the runtime of full detailed routing. Post-CTS labels
+show negative $\rho$ on 3 of 10 circuits (swerv, ethernet, and
+mor1kx for WNS), meaning they can reverse placement rankings and are
+unreliable for cross-stage supervision. Pre-route static timing labels,
+as used by existing methods~\cite{lamplace2025}, fall within this
+unreliable regime. While the severity may vary across technology nodes,
+these results indicate that validation against post-route outcomes is
+necessary when choosing a label source for cross-stage prediction.
 
 %% ============================================================
 \section{PPAPlace}
@@ -745,6 +737,14 @@ $1.00$, as expected from the timing--power trade-off. PPAPlace-select
 achieves comparable timing ($0.91$ WNS, $0.84$ TNS) but requires
 $10\times$ more candidate evaluations.
 
+\textbf{Note on LaMPlace comparison.} LaMPlace results ($^\dagger$) are
+from their published ChiPBench evaluation~\cite{lamplace2025}, which
+uses the same Nangate45 library and OpenROAD-based flow. Both their
+results and ours are normalized by the same Hier-RTLMP baseline, making
+the ratios directly comparable. Minor differences in OpenROAD version
+between our evaluation and theirs may affect absolute metric values, but
+the normalization by a shared baseline mitigates this.
+
 
 \subsection{Bayesian Optimization Analysis}
 \label{subsec:bo_results}
@@ -787,6 +787,11 @@ Average      & 0.95 & 0.90 & 0.91 & \textbf{0.86} \\
     \label{fig:results}
 \end{figure}
 
+We evaluate the BO mechanism along four axes: convergence efficiency,
+selection quality, surrogate accuracy on non-random configurations, and
+seed robustness.
+
+\textbf{Convergence.}
 Table~\ref{tab:bo_convergence} and Figure~\ref{fig:results}(c) compare
 surrogate-guided BO against random search over the same 5-parameter
 configuration space (fixed seed $s = 42$, 5 independent TPE seeds for
@@ -795,6 +800,7 @@ reaches at $T = 50$, a $2.5\times$ sample efficiency gain. At $T = 50$,
 BO finds configurations with average predicted WNS of 0.86 versus 0.91
 for random search.
 
+\textbf{Selection quality.}
 Figure~\ref{fig:results}(b) compares selection criteria on a pool of
 $K = 500$ candidates per circuit. HPWL-based selection performs close to
 random, while surrogate-based selection (PPAPlace-select) narrows the
@@ -807,16 +813,12 @@ the full post-GRT flow. Spearman $\rho$ between predicted and actual
 WNS is $0.82$ on these non-random configurations ($0.91$ on random
 configurations from Table~\ref{tab:rank_corr}), and 4 of 5
 surrogate-predicted top configurations appear in the GRT-validated
-top-5.
-
-\textbf{Hyperparameter importance.}
-fANOVA analysis shows target density accounts for 38\% of objective
-variance, density weight 28\%, learning rate 19\%, with the remaining
-parameters contributing 15\%. This is consistent with the
-density--wirelength trade-off in analytical
+top-5. fANOVA analysis shows target density accounts for 38\% of
+objective variance, followed by density weight (28\%) and learning rate
+(19\%), consistent with the density--wirelength trade-off in analytical
 placement~\cite{lu2015eplace}.
 
-\textbf{Multi-seed validation.}
+\textbf{Seed robustness.}
 The best BO configuration for bp\_be re-run with 5 seeds yields
 post-GRT WNS of $0.82 \pm 0.03$ (normalized), confirming that quality
 is intrinsic to the configuration rather than seed-specific.
@@ -827,9 +829,10 @@ is intrinsic to the configuration rather than seed-specific.
 
 \begin{table}[t]
 \centering
-\caption{Ablation on label stage and placement representation.
-(a)~$2 \times 2$ factorial: Kendall's $\tau$ (WNS) on held-out
-circuits. The top-left cell upper-bounds LaMPlace's operating point.
+\caption{Ablation on label stage and placement representation,
+evaluated on the five held-out test circuits.
+(a)~$2 \times 2$ factorial: Kendall's $\tau$ (WNS).
+The top-left cell upper-bounds LaMPlace's operating point.
 (b)~Per-stage label impact with fixed GAT+CNN architecture.}
 \label{tab:ablation_combined}
 \renewcommand{\arraystretch}{1.15}
@@ -888,8 +891,10 @@ slight fidelity gap.
 \subsubsection{Predictor Architecture}
 \label{subsec:pred_results}
 
-Figure~\ref{fig:results}(a) compares four predictor variants, all on
-post-GRT labels: macro-only polynomial ($\tau = 0.11$), CNN-only
+The $2 \times 2$ experiment above established that the mixed-size
+representation matters; Figure~\ref{fig:results}(a) unpacks which
+components contribute. Four variants are compared, all on post-GRT
+labels: macro-only polynomial ($\tau = 0.11$), CNN-only
 ($\tau = 0.22$), GAT-only ($\tau = 0.18$), and GAT+CNN
 ($\tau = 0.31$). The spatial stream alone outperforms the graph stream
 alone, and their combination exceeds either single stream, indicating
