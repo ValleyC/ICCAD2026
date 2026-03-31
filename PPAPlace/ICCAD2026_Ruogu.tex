@@ -138,57 +138,51 @@ The remainder of this paper is organized as follows. Section~\ref{sec:related} r
 \section{Related Work}
 \label{sec:related}
 
-\subsection{Analytical Placement}
+\paragraph{Analytical placement}
+Analytical placers formulate placement as continuous optimization of a
+smooth wirelength objective subject to density
+constraints~\cite{lu2015eplace, cheng2019replace}.
+DREAMPlace~\cite{lin2019dreamplace} recast this formulation as a neural
+network training problem, achieving over $30\times$ GPU speedup.
+DREAMPlace~4.0~\cite{dreamplace4} added net weighting driven by static
+timing analysis to prioritize timing-critical nets. However, these net
+weights are derived from pre-route STA estimates whose fidelity we
+question in Section~\ref{sec:label_fidelity}.
+AutoDMP~\cite{autodmp2023} introduced Bayesian optimization to tune
+DREAMPlace hyperparameters automatically. It uses HPWL as the BO
+objective, inheriting the same HPWL-to-PPA gap. PPAPlace replaces HPWL
+with a learned PPA surrogate as the BO objective. Commercial tools such
+as Synopsys DSO.ai~\cite{dsoai2025} and Cadence
+Cerebrus~\cite{cerebrus2025} apply reinforcement learning to tune tool
+configurations at a larger scale.
 
-Analytical placement has been the backbone of chip placement for decades. Among them, DREAMPlace~\cite{lin2019dreamplace} reformulated analytical placement as a neural network training problem, enabling GPU acceleration with over 30$\times$ speedup compared to the CPU-based RePlAce~\cite{cheng2019replace}. Later versions added timing-driven net weighting~\cite{dreamplace4} and support for mixed-size macros. Building on DREAMPlace, AutoDMP~\cite{autodmp2023} introduced Bayesian optimization to automatically tune placement hyperparameters using HPWL as the objective, an approach conceptually similar to what commercial tools like Synopsys DSO.ai~\cite{dsoai2025} do at a larger scale. However, AutoDMP optimizes HPWL rather than downstream PPA, inheriting the same HPWL-to-PPA gap. PPAPlace replaces HPWL with a learned PPA surrogate as the BO objective, directly targeting post-route quality. DG-RePlAce~\cite{dgreplace2024} showed that exploiting dataflow structure in machine learning accelerators can reduce wirelength by 34\%. DREAMPlace~4.0~\cite{dreamplace4} introduced momentum-based net
-weighting driven by static timing analysis, enabling the analytical
-engine to prioritize timing-critical nets. While this reduces the
-HPWL-to-timing gap within the placer, the net weights are derived from
-pre-route STA estimates whose fidelity we question in
-Section~\ref{sec:label_fidelity}. A common limitation across all these
-methods is that they optimize HPWL or its timing-weighted variants,
-sharing the HPWL-to-PPA gap that we aim to address.
+\paragraph{AI-based placement}
+AlphaChip~\cite{mirhoseini2021graph} pioneered deep reinforcement
+learning for macro placement, though its reproducibility remains
+debated~\cite{kahng2023reevaluating}. Subsequent work explored visual
+representation learning~\cite{lai2022maskplace}, offline
+RL~\cite{lai2023chipformer}, evolutionary
+search~\cite{shi2023wire}, placement
+refinement~\cite{maskregulate2024}, and tree-search-guided
+RL~\cite{efficientplace2024}. Despite this diversity, all methods
+optimize HPWL or macro HPWL as the primary objective.
 
-\subsection{AI-Based Placement}
-
-On the other hand, AI-based methods have explored fundamentally different
-placement strategies. Despite the controversial reproducibility, AlphaChip~\cite{mirhoseini2021graph} pioneered deep reinforcement learning for macro placement~\cite{kahng2023reevaluating}. MaskPlace~\cite{lai2022maskplace} treated placement as visual representation learning, and ChiPFormer~\cite{lai2023chipformer} improved sample efficiency through offline RL. WireMask-BBO~\cite{shi2023wire} showed that evolutionary algorithms with appropriate problem formulations can match or outperform RL methods on wirelength. MaskRegulate~\cite{maskregulate2024} shifted the paradigm from placing macros from scratch to refining existing placements, and EfficientPlace~\cite{efficientplace2024} combined tree search with RL to
-reduce exploration cost. Despite the diversity of these approaches, they
-all optimize HPWL or macro HPWL as the primary objective.
-
-\subsection{Cross-Stage PPA Prediction and Optimization}
-LaMPlace~\cite{lamplace2025} is a representative recent work that
-directly targets the HPWL-to-PPA gap. It trains a Laurent polynomial
-predictor on offline data to estimate cross-stage metrics from macro
-pairwise distances and uses the predictor to generate a guidance mask
-for WireMask-EA's evolutionary search, achieving 43\% and 30\%
-improvements in TNS and WNS respectively. Its training labels are
-obtained through DREAMPlace cell placement followed by OpenTimer static
-timing analysis, providing pre-route timing supervision.
-MacroRank~\cite{macrorank2023} trained a model to rank macro placements
-by routing quality but did not integrate it into a placement optimizer.
-PreRoutGNN~\cite{preroutgnn2024} predicted pre-routing timing with high
-accuracy but focused on prediction rather than using the predictions to
-improve placement. ReMaP~\cite{re2map2025} recursively prototypes and relocates macros to improve PPA, and BBOPlace-Bench~\cite{bboplacebench2025}
-provides a unified benchmark for black-box optimization approaches to
-macro placement. Both highlight the importance of aligning the search
-objective with downstream PPA rather than HPWL.
-In the commercial space, Synopsys
-DSO.ai~\cite{dsoai2025} and Cadence Cerebrus~\cite{cerebrus2025} use
-reinforcement learning to tune tool configuration parameters on top of
-existing analytical engines, treating placement as a design-space
-exploration problem rather than modifying the placement objective itself.
-
-\subsection{Benchmarking}
-
-Traditional placement benchmarks such as ISPD 2005 and ICCAD 2004 evaluate
-methods using wirelength and density metrics alone, without considering
-post-route PPA. ChiPBench~\cite{chipbench2025} addressed this limitation
-by providing 20 circuits across CPUs, GPUs, and NPUs with a complete
-OpenROAD-based evaluation flow that measures post-route WNS, TNS, power,
-area, and DRC violations. The finding that every evaluated AI method
-degrades PPA relative to the hierarchical baseline directly motivates our
-work. We adopt ChiPBench's evaluation protocol as our primary benchmark.
+\paragraph{Cross-stage PPA prediction and optimization}
+LaMPlace~\cite{lamplace2025} trains a Laurent polynomial predictor on
+offline data to estimate cross-stage metrics from macro pairwise
+distances. It uses the predictor to guide WireMask-EA's evolutionary
+search, achieving notable timing improvements. Its training labels come
+from DREAMPlace cell placement followed by OpenTimer static timing
+analysis, providing pre-route supervision.
+MacroRank~\cite{macrorank2023} and
+PreRoutGNN~\cite{preroutgnn2024} predicted placement or routing quality
+but did not use these predictions to improve placement.
+ReMaP~\cite{re2map2025} and
+BBOPlace-Bench~\cite{bboplacebench2025} highlight the importance of
+aligning the search objective with downstream PPA rather than HPWL.
+Across these efforts, a common gap remains: no work has systematically
+validated which design flow stage provides the most reliable supervision
+for cross-stage prediction.
 
 
 %% ============================================================
