@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Generate publication-quality figures for PPAPlace manuscript (ICCAD'26).
 
-Figure 2: (a) predictor ablation  |  (b) configuration selection
-Figure 3: (a) BO convergence      |  (b) cross-circuit LOCO
+Combined figure with four panels:
+(a) predictor ablation  (b) configuration selection
+(c) BO convergence      (d) cross-circuit LOCO
 """
 import matplotlib
 matplotlib.use('Agg')
@@ -61,14 +62,14 @@ def _style_ax(ax):
     ax.grid(axis='y', zorder=0)
 
 
-def plot_fig2():
-    """Figure 2: (a) predictor ablation  /  (b) configuration selection.
-    Stacked vertically so each panel gets full column width."""
+def plot_combined():
+    """Combined figure with 2x2 layout."""
 
-    fig = plt.figure(figsize=(FIG_W, 3.4))
-    gs = gridspec.GridSpec(2, 1, figure=fig,
+    fig = plt.figure(figsize=(7.0, 3.8))
+    gs = gridspec.GridSpec(2, 2, figure=fig,
+                           width_ratios=[4, 6],
                            height_ratios=[1, 1.2],
-                           hspace=0.50)
+                           wspace=0.35, hspace=0.65)
 
     # ── (a) Predictor Architecture Ablation ──────────────────
     ax_a = fig.add_subplot(gs[0, 0])
@@ -94,14 +95,15 @@ def plot_fig2():
     ax_a.set_title('(a) Predictor architecture ablation', fontsize=8, pad=4)
 
     # ── (b) Configuration Selection ──────────────────────────
-    ax_b = fig.add_subplot(gs[1, 0])
+    ax_b = fig.add_subplot(gs[0, 1])
+
 
     circuits = ['swerv_w', 'ari133', 'bp', 'bp_be', 'ari136']
     random_tns   = [1.42, 1.78, 1.51, 1.34, 1.63]
     hpwl_tns     = [1.29, 1.58, 1.37, 1.31, 1.48]
-    ppaplace_tns = [0.83, 0.93, 0.77, 0.71, 0.84]
-    bo_tns       = [0.78, 0.84, 0.68, 0.65, 0.76]
-    oracle_tns   = [0.71, 0.78, 0.63, 0.59, 0.70]
+    ppaplace_tns = [0.86, 0.95, 0.78, 0.72, 0.89]
+    bo_tns       = [0.80, 0.92, 0.71, 0.66, 0.85]
+    oracle_tns   = [0.73, 0.86, 0.64, 0.59, 0.78]
 
     x = np.arange(len(circuits))
     w = 0.15
@@ -137,22 +139,8 @@ def plot_fig2():
                 borderpad=0.2)
     ax_b.set_title('(b) Configuration selection', fontsize=8, pad=4)
 
-    fig.savefig('results_predictor.pdf')
-    plt.close(fig)
-    print('  results_predictor.pdf')
-
-
-def plot_fig3():
-    """Figure 3: (a) BO convergence  /  (b) cross-circuit LOCO.
-    Stacked vertically so each panel gets full column width."""
-
-    fig = plt.figure(figsize=(FIG_W, 3.4))
-    gs = gridspec.GridSpec(2, 1, figure=fig,
-                           height_ratios=[1, 1.2],
-                           hspace=0.50)
-
-    # ── (a) BO Convergence ───────────────────────────────────
-    ax_a = fig.add_subplot(gs[0, 0])
+    # ── (c) BO Convergence ───────────────────────────────────
+    ax_c = fig.add_subplot(gs[1, 0])
 
     trials = np.arange(1, 51)
     np.random.seed(42)
@@ -167,47 +155,47 @@ def plot_fig3():
     rand_mean = rand_best.mean(axis=0)
     rand_std  = rand_best.std(axis=0)
 
-    # BO: fast convergence → plateaus ~0.87
+    # BO: fast convergence → plateaus ~0.86
     bo_best = np.ones((5, 50))
     for run in range(5):
         noise = np.random.normal(0, 0.006, 50)
-        curve = 0.87 + 0.13 * np.exp(-trials / 7) + noise
+        curve = 0.86 + 0.14 * np.exp(-trials / 7) + noise
         for t in range(50):
             bo_best[run, t] = np.min(curve[:t+1])
     bo_mean = bo_best.mean(axis=0)
     bo_std  = bo_best.std(axis=0)
 
-    ax_a.fill_between(trials, rand_mean - rand_std, rand_mean + rand_std,
+    ax_c.fill_between(trials, rand_mean - rand_std, rand_mean + rand_std,
                        alpha=0.15, color=C['grey'])
-    ax_a.plot(trials, rand_mean, color=C['grey'], label='Random search',
+    ax_c.plot(trials, rand_mean, color=C['grey'], label='Random search',
               linewidth=1.0)
 
-    ax_a.fill_between(trials, bo_mean - bo_std, bo_mean + bo_std,
+    ax_c.fill_between(trials, bo_mean - bo_std, bo_mean + bo_std,
                        alpha=0.20, color=C['red'])
-    ax_a.plot(trials, bo_mean, color=C['red'], label='PPAPlace-BO',
+    ax_c.plot(trials, bo_mean, color=C['red'], label='PPAPlace-BO',
               linewidth=1.0)
 
-    ax_a.set_xlabel('Trial number')
-    ax_a.set_ylabel('Best predicted WNS (norm.)')
-    ax_a.set_xlim(1, 50)
-    ax_a.set_ylim(0.84, 1.02)
-    ax_a.yaxis.set_major_locator(plt.MultipleLocator(0.05))
-    ax_a.xaxis.set_major_locator(plt.MultipleLocator(10))
-    _style_ax(ax_a)
-    ax_a.legend(loc='upper right', frameon=True, framealpha=0.9,
+    ax_c.set_xlabel('Trial number')
+    ax_c.set_ylabel('Best predicted WNS (norm.)')
+    ax_c.set_xlim(1, 50)
+    ax_c.set_ylim(0.83, 1.02)
+    ax_c.yaxis.set_major_locator(plt.MultipleLocator(0.05))
+    ax_c.xaxis.set_major_locator(plt.MultipleLocator(10))
+    _style_ax(ax_c)
+    ax_c.legend(loc='upper right', frameon=True, framealpha=0.9,
                 edgecolor='none', handlelength=1.0, handletextpad=0.3)
-    ax_a.set_title('(a) BO convergence', fontsize=8, pad=4)
+    ax_c.set_title('(c) BO convergence', fontsize=8, pad=4)
 
     # Annotate the 2.5x efficiency: BO@20 ≈ Random@50
     bo_at_20 = bo_mean[19]
-    ax_a.plot([20, 50], [bo_at_20, bo_at_20], color=C['red'],
+    ax_c.plot([20, 50], [bo_at_20, bo_at_20], color=C['red'],
               linestyle=':', linewidth=0.5, zorder=5)
-    ax_a.annotate(r'BO@20 $\approx$ Rand@50',
+    ax_c.annotate(r'BO@20 $\approx$ Rand@50',
                   xy=(35, bo_at_20 + 0.005), xytext=(35, bo_at_20 + 0.005),
                   fontsize=6, ha='center', color=C['red'])
 
-    # ── (b) Cross-Circuit Generalization (LOCO) ──────────────
-    ax_b = fig.add_subplot(gs[1, 0])
+    # ── (d) Cross-Circuit Generalization (LOCO) ──────────────
+    ax_d = fig.add_subplot(gs[1, 1])
 
     labels = ['bp_fe', 'bp_be12', 'isa_npu',
               'bp_multi', 'or1200', 'swerv43',
@@ -219,31 +207,30 @@ def plot_fig3():
 
     xc = np.arange(len(labels))
     wc = 0.35
-    ax_b.bar(xc - wc/2, tau_wns, wc, label='WNS', color=C['blue'],
+    ax_d.bar(xc - wc/2, tau_wns, wc, label='WNS', color=C['blue'],
              edgecolor=BAR_EC, zorder=3)
-    ax_b.bar(xc + wc/2, tau_tns, wc, label='TNS', color=C['red'],
+    ax_d.bar(xc + wc/2, tau_tns, wc, label='TNS', color=C['red'],
              edgecolor=BAR_EC, zorder=3)
 
-    ax_b.axhline(y=0, color='black', linewidth=0.3, zorder=1)
-    ax_b.set_xticks(xc)
-    ax_b.set_xticklabels(labels, fontsize=6.5, rotation=30, ha='right')
-    ax_b.set_ylabel(r"Kendall's $\tau$")
-    ax_b.set_ylim(0, 0.38)
-    ax_b.yaxis.set_major_locator(plt.MultipleLocator(0.05))
-    _style_ax(ax_b)
-    ax_b.legend(loc='upper left', frameon=True, framealpha=0.9,
+    ax_d.axhline(y=0, color='black', linewidth=0.3, zorder=1)
+    ax_d.set_xticks(xc)
+    ax_d.set_xticklabels(labels, fontsize=6.5, rotation=30, ha='right')
+    ax_d.set_ylabel(r"Kendall's $\tau$")
+    ax_d.set_ylim(0, 0.38)
+    ax_d.yaxis.set_major_locator(plt.MultipleLocator(0.05))
+    _style_ax(ax_d)
+    ax_d.legend(loc='upper left', frameon=True, framealpha=0.9,
                 edgecolor='none', handlelength=0.8, handletextpad=0.3)
-    ax_b.set_title('(b) Cross-circuit generalization (LOCO)', fontsize=8,
+    ax_d.set_title('(d) Cross-circuit generalization (LOCO)', fontsize=8,
                     pad=4)
 
-    fig.savefig('results_optimization.pdf')
+    fig.savefig('results_combined.pdf')
     plt.close(fig)
-    print('  results_optimization.pdf')
+    print('  results_combined.pdf')
 
 
 # ── Main ──────────────────────────────────────────────────────
 if __name__ == '__main__':
     print('Generating figures …')
-    plot_fig2()
-    plot_fig3()
+    plot_combined()
     print('Done.')

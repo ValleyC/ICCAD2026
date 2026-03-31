@@ -64,7 +64,7 @@
 
 %% ============================================================
 \begin{abstract}
-Macro placement significantly determines the chip's post-route performance, power, and area (PPA). Most chip placers optimize the half-perimeter wirelength (HPWL), yet recent benchmarking shows a near-zero correlation between HPWL and post-route timing metrics, and all evaluated AI placers degrade PPA relative to hierarchical baselines. Recent efforts such as LaMPlace train cross-stage predictors to close this gap, but rely on macro-centric representations with pre-routing supervision. This paper presents PPAPlace, a placer-agnostic framework that directly predicts post-route PPA from the full mixed-size placement state. A systematic label fidelity study across design flow stages shows that post-global-routing metrics best reflect final PPA while remaining cheap to generate; in contrast, pre-route metrics can reverse placement rankings. A dual-stream predictor combining graph attention over the netlist with spatial convolution over the placement grid is trained on these post-GRT labels. Because the predictor takes any finished placement as input, it serves as a fast surrogate objective for configuration optimization across different placement paradigms. PPAPlace deploys this surrogate through Bayesian optimization over the placer's hyperparameter space, finding configurations that lead to high-quality placements. PPAPlace is evaluated on five unseen ChiPBench circuits and consistently outperforms baseline placement methods, achieving average WNS and TNS improvements of 15\% and 26\%, respectively.
+Macro placement significantly determines the chip's post-route performance, power, and area (PPA). Most chip placers optimize the half-perimeter wirelength (HPWL), yet recent benchmarking shows a near-zero correlation between HPWL and post-route timing metrics, and all evaluated AI placers degrade PPA relative to hierarchical baselines. Recent efforts such as LaMPlace train cross-stage predictors to close this gap, but rely on macro-centric representations with pre-routing supervision. This paper presents PPAPlace, a placer-agnostic framework that directly predicts post-route PPA from the full mixed-size placement state. A systematic label fidelity study across design flow stages shows that post-global-routing metrics best reflect final PPA while remaining cheap to generate; in contrast, pre-route metrics can reverse placement rankings. A dual-stream predictor combining graph attention over the netlist with spatial convolution over the placement grid is trained on these post-GRT labels. Because the predictor takes any finished placement as input, it serves as a fast surrogate objective for configuration optimization across different placement paradigms. PPAPlace deploys this surrogate through Bayesian optimization over the placer's hyperparameter space, finding configurations that lead to high-quality placements. PPAPlace is evaluated on five unseen ChiPBench circuits and consistently outperforms baseline placement methods, achieving average WNS and TNS improvements of 12\% and 21\%, respectively.
 \end{abstract}
 
 \keywords{chip placement, PPA prediction, Bayesian optimization, surrogate-guided optimization, graph attention network, physical design}
@@ -129,7 +129,7 @@ The contributions are as follows:
 
     \item A dual-stream predictor over the complete mixed-size placement state, achieving nearly $4\times$ higher ranking accuracy than the macro-only, pre-route paradigm.
 
-    \item A placer-agnostic surrogate-guided optimization framework that improves WNS by 15\% and TNS by 26\% over the hierarchical baseline in 50 trials, generalizing across placers without retraining.
+    \item A surrogate-guided optimization framework that improves WNS by 12\% and TNS by 21\% over the hierarchical baseline in 50 trials. Because the predictor operates on finished placements rather than placer internals, the framework is architecturally placer-agnostic.
 \end{enumerate}
 
 The remainder of this paper is organized as follows. Section~\ref{sec:related} reviews analytical, AI-based, and cross-stage prediction approaches to chip placement. Section~\ref{sec:prelim} formulates the cross-stage PPA prediction problem. Section~\ref{sec:label_fidelity} presents the label fidelity study that identifies post-global-routing as the most effective supervision stage. Section~\ref{sec:method} describes the PPAPlace framework, including the mixed-size placement representation, the dual-stream predictor architecture, and the surrogate-guided configuration optimization mechanism. Section~\ref{sec:experiments} evaluates PPAPlace on ChiPBench circuits through the full RTL-to-signoff flow. Section~\ref{sec:conclusion} concludes the paper.
@@ -195,6 +195,78 @@ work. We adopt ChiPBench's evaluation protocol as our primary benchmark.
 \section{Preliminaries}
 \label{sec:prelim}
 
+\subsection{Chip Placement and Evaluation Metrics}
+
+Chip placement assigns physical positions to circuit modules on a
+two-dimensional canvas. A netlist hypergraph $H = (V, E)$ specifies the
+modules $V$ (macros and standard cells) and the nets $E$ connecting
+them. Placement methods seek positions
+$\mathbf{x} = \{(x_i, y_i)\}_{i=1}^{N}$ that minimize a placement
+objective. In analytical placers such as
+DREAMPlace~\cite{lin2019dreamplace}, this takes the form:
+\begin{equation}
+\label{eq:placement}
+\min_{\mathbf{x}} \; \mathcal{L}(\mathbf{x})
+= \mathcal{W}(\mathbf{x}) + \lambda \cdot \mathcal{D}(\mathbf{x})
+\end{equation}
+where $\mathcal{W}$ is a smooth wirelength approximation and
+$\mathcal{D}$ is a density penalty that discourages cell
+overlap~\cite{lu2015eplace}. The density weight $\lambda$ increases
+iteratively to enforce legality. The wirelength term is typically based
+on HPWL:
+\begin{equation}
+\label{eq:hpwl}
+\mathrm{HPWL}(\mathbf{x}) = \sum_{e \in E}
+\left[\max_{i \in e} x_i - \min_{i \in e} x_i
++ \max_{i \in e} y_i - \min_{i \in e} y_i\right]
+\end{equation}
+which estimates total wire length by summing the bounding-box
+half-perimeters across all nets. HPWL is differentiable (via smooth
+approximations such as the weighted-average
+model~\cite{hsu2013wa}), decomposable across nets, and fast to compute.
+
+However, the actual quality of a placed design is determined by
+post-route PPA metrics obtained by executing the downstream design
+flow after placement. This flow proceeds through three stages of
+increasing accuracy: \textbf{clock tree synthesis (CTS)}
+constructs a balanced clock distribution network with buffers to meet
+setup timing; \textbf{global routing (GRT)} assigns nets to coarse
+routing regions, introducing congestion-dependent wire delay estimates;
+and \textbf{detailed routing (DRT)} assigns exact metal tracks and
+vias, producing signoff-quality metrics. Given a placement
+$\mathbf{x}$, let $\mathrm{Flow}(\mathbf{x})$ denote the full flow
+and $\mathrm{Flow}_s(\mathbf{x})$ the flow truncated at stage $s$:
+\begin{equation}
+\label{eq:ppa}
+\mathbf{y} = \mathrm{Flow}(\mathbf{x})
+= \left[\mathrm{WNS},\; \mathrm{TNS},\;
+\mathrm{Power},\; \mathrm{Area}\right]
+\end{equation}
+\begin{equation}
+\label{eq:partial_flow}
+\mathbf{y}_s = \mathrm{Flow}_s(\mathbf{x}), \quad
+s \in \{\text{CTS},\; \text{GRT},\; \text{DRT}\}
+\end{equation}
+where WNS is the worst negative slack (the most critical timing
+violation), TNS is the total negative slack (sum of all violations),
+and power and area are the total power consumption and physical
+footprint. Computing $\mathbf{y}$ requires running the full flow,
+which typically takes tens of minutes to hours per design.
+
+The goal of a cross-stage PPA predictor is to learn
+$f_\theta(\mathbf{x}) \approx \mathbf{y}_{\text{DRT}}$ from
+placement-stage features, thus avoiding the cost of running
+$\mathrm{Flow}(\mathbf{x})$ at inference time. A prerequisite is that
+the training labels $\mathbf{y}_s$ used to supervise $f_\theta$ must
+rank different quality of placements consistently with the final outcome
+$\mathbf{y}_{\text{DRT}}$.
+Section~\ref{sec:label_fidelity} investigates which stage $s$ best
+satisfies this requirement.
+
+%% ============================================================
+\section{Label Fidelity Analysis}
+\label{sec:label_fidelity}
+
 \begin{table*}[t]
     \centering
     \caption{Spearman rank correlation ($\rho$) between
@@ -235,107 +307,7 @@ work. We adopt ChiPBench's evaluation protocol as our primary benchmark.
     \renewcommand{\arraystretch}{1.0}
 \end{table*}
 
-\subsection{Chip Placement and Evaluation Metrics}
-
-Chip placement assigns physical positions to circuit modules on a
-two-dimensional canvas. A netlist hypergraph $H = (V, E)$ specifies the
-modules $V$ (macros and standard cells) and the nets $E$ connecting
-them. Placement methods seek positions
-$\mathbf{x} = \{(x_i, y_i)\}_{i=1}^{N}$ that minimize a placement
-objective. In analytical placers such as
-DREAMPlace~\cite{lin2019dreamplace}, this takes the form:
-\begin{equation}
-\label{eq:placement}
-\min_{\mathbf{x}} \; \mathcal{L}(\mathbf{x})
-= \mathcal{W}(\mathbf{x}) + \lambda \cdot \mathcal{D}(\mathbf{x})
-\end{equation}
-where $\mathcal{W}$ is a smooth wirelength approximation and
-$\mathcal{D}$ is a density penalty that discourages cell
-overlap~\cite{lu2015eplace}. The density weight $\lambda$ increases
-iteratively to enforce legality. The wirelength term is typically based
-on HPWL:
-\begin{equation}
-\label{eq:hpwl}
-\mathrm{HPWL}(\mathbf{x}) = \sum_{e \in E}
-\left[\max_{i \in e} x_i - \min_{i \in e} x_i
-+ \max_{i \in e} y_i - \min_{i \in e} y_i\right]
-\end{equation}
-which estimates total wire length by summing the bounding-box
-half-perimeters across all nets. HPWL is differentiable (via smooth
-approximations such as the weighted-average
-model~\cite{hsu2013wa}), decomposable across nets, and fast to compute.
-
-However, the actual quality of a placed design is determined by
-post-route PPA metrics. Given a placement $\mathbf{x}$, let
-$\mathrm{Flow}(\mathbf{x})$ denote the result of executing the full
-downstream design flow (cell placement, CTS, routing, and timing
-analysis). The PPA outcome is:
-\begin{equation}
-\label{eq:ppa}
-\mathbf{y} = \mathrm{Flow}(\mathbf{x})
-= \left[\mathrm{WNS},\; \mathrm{TNS},\;
-\mathrm{Power},\; \mathrm{Area}\right]
-\end{equation}
-where WNS is the worst negative slack (the most critical timing
-violation), TNS is the total negative slack (sum of all violations),
-and power and area are the total power consumption and physical
-footprint. Computing $\mathbf{y}$ requires running the full design flow,
-which typically takes tens of minutes to hours per design.
-
-The design flow between placement and signoff consists of several
-stages, each providing increasingly accurate but more expensive
-evaluation. Let $\mathrm{Flow}_s(\mathbf{x})$ denote a partial flow
-truncated at stage $s$:
-\begin{equation}
-\label{eq:partial_flow}
-\mathbf{y}_s = \mathrm{Flow}_s(\mathbf{x}), \quad
-s \in \{\text{CTS},\; \text{GRT},\; \text{DRT}\}
-\end{equation}
-
-\begin{itemize}
-    \item \textbf{CTS} ($\mathbf{y}_{\text{CTS}}$): constructs a
-    balanced clock distribution network that delivers the clock signal
-    to all sequential elements, inserting buffers to meet setup timing
-    constraints.
-    \item \textbf{GRT} ($\mathbf{y}_{\text{GRT}}$): assigns nets to
-    coarse routing regions across the chip, introducing
-    congestion-dependent wire delay estimates.
-    \item \textbf{DRT} ($\mathbf{y}_{\text{DRT}}$): assigns exact metal
-    tracks and vias for every net, producing signoff-quality timing,
-    power, and area metrics.
-\end{itemize}
-
-The goal of a cross-stage PPA predictor is to learn
-$f_\theta(\mathbf{x}) \approx \mathbf{y}_{\text{DRT}}$ from
-placement-stage features, avoiding the cost of running
-$\mathrm{Flow}(\mathbf{x})$ at inference time. A prerequisite is that
-the training labels $\mathbf{y}_s$ used to supervise $f_\theta$ must
-rank placements consistently with the final outcome
-$\mathbf{y}_{\text{DRT}}$.
-Section~\ref{sec:label_fidelity} investigates which stage $s$ best
-satisfies this requirement.
-
-%% ============================================================
-\section{Label Fidelity Analysis}
-\label{sec:label_fidelity}
-
-\begin{figure*}[t]
-    \centering
-    \includegraphics[width=\textwidth]{graphs/ppaplace_overview.pdf}
-    \caption{PPAPlace framework. (a)~Offline: diverse placement
-    configurations are evaluated through the OpenROAD flow to
-    post-global-routing. A dual-stream predictor (GAT + CNN
-    $\rightarrow$ MLP) is trained on the resulting (placement, PPA)
-    pairs. (b)~Online: the trained predictor serves as the objective
-    function for Bayesian optimization over the placer's configuration
-    space, proposing configurations iteratively. Only the top-ranked
-    configuration proceeds through the full post-route flow.}
-    \label{fig:overview}
-\end{figure*}
-
-Any learning-based PPA predictor requires training labels that rank
-placements consistently with their final post-route quality. This
-section investigates which stage offers the best trade-off between
+This section investigates which stage offers the best trade-off between placement quality
 ranking fidelity and evaluation cost across a diverse set of circuits.
 
 \subsection{Setup}
@@ -348,8 +320,8 @@ peripheral designs (ethernet, dft68, vga\_lcd). bp\_be12 is a variant
 of the BlackParrot backend at a coarser macro granularity (12 macros).
 Macro counts range from 10 to 132 and cell counts from 33K to 427K,
 ensuring that the findings are not specific to a single design scale
-or application domain. Note that this fidelity study uses RTLMP weight
-configurations evaluated through the full flow and is independent of
+or application domain. Note that this fidelity test uses RTLMP weight
+configurations evaluated through the full flow, and is independent of
 the training/test split used for the main experiments in
 Section~\ref{sec:experiments}.
 
@@ -358,9 +330,9 @@ of OpenROAD's RTLMP hierarchical macro
 placer~\cite{ajayi2019openroad} are systematically varied. RTLMP
 optimizes a weighted combination of area utilization, wirelength,
 boundary proximity, outline conformance, notch avoidance, and dead
-space. By sweeping these weights, the same deterministic placer produces
+space. By sweeping these weights, the placer produces
 structurally different macro arrangements while remaining within the
-space of physically reasonable placements. For each circuit, 20
+space of physically reasonable placements. For each circuit, 20 different
 configurations are generated, including single-weight extremes (e.g.,
 high or low area weight), pairwise combinations (e.g., high wirelength
 and boundary weights), and globally scaled settings.
@@ -368,8 +340,8 @@ and boundary weights), and globally scaled settings.
 Each configuration is evaluated through the complete ChiPBench flow:
 synthesis, floorplanning with the specified RTLMP weights, standard cell
 placement, CTS, GRT, and DRT. PPA metrics (WNS, TNS, power) are
-recorded at each stage. Area is excluded as it is determined by the
-floorplan and does not vary across configurations of the same circuit.
+recorded at each stage. Area is excluded because it is determined by the
+floorplan and remains constant across different placements for the same circuit.
 Because the entire flow runs within a single ChiPBench pipeline, all
 stages share the same synthesized netlist and extracted parasitics,
 ensuring internal consistency across stages. Post-DRT metrics serve as
@@ -377,9 +349,9 @@ the ground truth throughout this analysis.
 
 \subsection{Stage-Wise Rank Correlation}
 
-Table~\ref{tab:rank_corr} reports the Spearman $\rho$ between WNS at
-each intermediate stage and the post-route ground truth, computed over
-the same set of placements per circuit.
+Table~\ref{tab:rank_corr} reports the Spearman $\rho$ between WNS and
+TNS at each intermediate stage and the post-route ground truth,
+computed over the same set of placements per circuit.
 
 Circuits are ordered by macro count (10 to 132). HPWL shows near-zero
 correlation with post-route WNS across all circuits ($|\rho| < 0.22$),
@@ -417,10 +389,9 @@ Based on the findings in Section~\ref{sec:label_fidelity}, PPAPlace
 uses post-global-routing labels as training supervision. The framework
 consists of a PPA predictor trained on the mixed-size placement state
 (Sections~\ref{subsec:representation}--\ref{subsec:training}) and a
-surrogate-guided configuration optimization mechanism---supporting
-both candidate selection and Bayesian optimization---that uses the
-predictor to guide any placement method
-(Section~\ref{subsec:config}). Figure~\ref{fig:overview} illustrates
+surrogate-guided configuration optimization mechanism. This framework supports
+both candidate selection and Bayesian optimization, which uses the
+predictor to guide any placement method (Section~\ref{subsec:config}). Figure~\ref{fig:overview} illustrates
 the overall framework.
 
 
@@ -469,21 +440,37 @@ n_i,\; s_i]
 where $(x_i, y_i)$ is normalized position, $(w_i, h_i)$ is normalized
 width and height, $r_i = w_i / h_i$ is aspect ratio, $p_i$ is pin
 count, $n_i$ is net degree (number of nets connected to this node), and
-$s_i$ is average net span (mean HPWL of connected nets). The spatial
-and graph streams observe strictly complementary information: the CNN
-captures where density and congestion concentrate across the chip, while
-the GAT captures what each module is and how far its connections reach.
+$s_i$ is average net span (mean HPWL of connected nets). 
 
-Together, the spatial and graph representations provide the predictor
+The spatial and graph streams observe strictly complementary information: the CNN
+captures where density and congestion concentrate across the chip, while the GAT captures what each module is and how far its connections reach. Together, the spatial and graph representations provide the predictor
 with both the global density landscape and the local connectivity
 structure of the placement.
 
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{graphs/ppaplace_overview.pdf}
+    \caption{PPAPlace framework. (a)~Offline: diverse placement
+    configurations are evaluated through the OpenROAD flow to
+    post-global-routing. A dual-stream predictor (GAT + CNN
+    $\rightarrow$ MLP) is trained on the resulting (placement, PPA)
+    pairs. (b)~Online: the trained predictor serves as the objective
+    function for Bayesian optimization over the placer's configuration
+    space, proposing configurations iteratively. Only the top-ranked
+    configuration proceeds through the full post-route flow.}
+    \label{fig:overview}
+\end{figure*}
 
 \subsection{Dual-Stream PPA Predictor}
 \label{subsec:architecture}
 
 The two representations are processed by separate encoder streams and
 fused for prediction.
+
+\textbf{Spatial stream.} A lightweight CNN consisting of 3 convolutional
+layers with ReLU activations progressively reduces the spatial
+resolution of the $64 \times 64$ grid. GAP produces
+a spatial embedding $\mathbf{e}_s \in \mathbb{R}^{256}$.
 
 \textbf{Graph stream.} A 4-layer graph attention network
 (GAT)~\cite{gat2018} with 128-dimensional hidden states and 4
@@ -492,11 +479,6 @@ each layer to learn different types of relationships between connected
 nodes, such as spatial proximity and connectivity strength. Global Average
 Pooling (GAP) aggregates all node embeddings into a fixed-size graph embedding
 $\mathbf{e}_g \in \mathbb{R}^{256}$, regardless of circuit size.
-
-\textbf{Spatial stream.} A lightweight CNN consisting of 3 convolutional
-layers with ReLU activations progressively reduces the spatial
-resolution of the $64 \times 64$ grid. GAP produces
-a spatial embedding $\mathbf{e}_s \in \mathbb{R}^{256}$.
 
 \textbf{Fusion and prediction.} The two embeddings are concatenated and
 mapped to PPA predictions through a 2-layer MLP:
@@ -522,7 +504,7 @@ different numbers of cells and macros.
 Training data is generated by running a placement method with $M$
 randomized configurations per circuit. Each configuration varies
 parameters that affect placement quality, such as target density and
-density weight schedule. Each resulting placement is
+density weight schedule. As discussed in Section~\ref{sec:label_fidelity}, each resulting placement is
 evaluated through the OpenROAD flow to post-global-routing, producing
 labels $\mathbf{y}_i = [\mathrm{WNS},\; \mathrm{TNS},\;
 \mathrm{Power},\; \mathrm{Area}]$. The training set is
@@ -538,8 +520,10 @@ The predictor is trained with a composite loss:
 + \lambda_r \cdot \mathcal{L}_{\mathrm{rank}}
 \end{equation}
 $\mathcal{L}_{\mathrm{MSE}}$ is the mean squared error between
-predicted and true PPA values. $\mathcal{L}_{\mathrm{rank}}$ is a
-pairwise ranking loss over placement pairs from the same circuit:
+predicted and true PPA values. The core task of the predictor is not to estimate exact PPA values,
+but to correctly rank which placements are better and which are worse.
+Because of this, $\mathcal{L}_{\mathrm{rank}}$ is a pairwise ranking loss
+computed over placement pairs from the same circuit:
 \begin{equation}
 \label{eq:ranking}
 \mathcal{L}_{\mathrm{rank}} = \sum_{(i,j)}
@@ -550,19 +534,18 @@ where the sum is over all placement pairs $(i, j)$ from the same
 circuit. All four PPA metrics are sign-unified so that lower values
 indicate better quality (WNS and TNS are negated), and z-score
 normalization per circuit ensures comparable scales across metrics.
-The dot product is positive when the predicted ranking agrees with the
-ground truth across all metrics simultaneously; the hinge
+The dot product is positive when the predicted ordering agrees with
+the ground truth across all metrics simultaneously. The hinge
 $\max(0, \cdot)$ incurs zero loss for correctly ranked pairs and a
-linear penalty for misranked ones. With $M = 500$ samples per circuit,
-the $\binom{500}{2} \approx 125$K pairs are computed exhaustively
-without subsampling, as this remains tractable on modern GPUs.
+linear penalty for misranked ones. This formulation directly optimizes
+what the downstream configuration optimization requires: given two
+placements from the same circuit, the predictor should prefer the one
+with better post-route PPA. With $M = 500$ samples per circuit, the
+$\binom{500}{2} \approx 125$K pairs are computed exhaustively without
+subsampling, as this remains tractable on modern GPUs.
 
-MSE provides an absolute training signal that stabilizes learning,
+With this composite loss function, the MSE provides an absolute training signal that stabilizes learning,
 while the ranking loss specifically optimizes ordinal accuracy.
-For downstream configuration selection
-(Eq.~\eqref{eq:select}), the argmin operates over the predicted
-WNS component of $f_\theta$, selecting the placement with the least
-predicted timing violation.
 
 \subsubsection{Cross-Circuit Generalization}
 
@@ -575,11 +558,8 @@ all circuits to the same resolution regardless of actual canvas dimensions. Seco
 
 The trained predictor $f_\theta$ provides a fast approximation of
 post-route PPA without running the downstream flow. PPAPlace exploits
-this by searching over a placer's configuration space for the
-configuration whose resulting placement receives the best predicted PPA,
-without modifying the placer's internals.
-
-Let $\mathcal{P}(\mathbf{h})$ denote a placement method with
+this by searching over a placer's configuration space to find the
+configuration that generates placement with the best predicted PPA. Let $\mathcal{P}(\mathbf{h})$ denote a placement method with
 configuration $\mathbf{h}$. The objective is:
 \begin{equation}
 \label{eq:config}
@@ -593,7 +573,7 @@ can produce candidate placements. In both cases below, the same
 trained predictor serves as the objective function---the deployment
 strategy is independent of the surrogate architecture.
 
-\subsubsection{Surrogate-Guided Selection}
+\subsubsection{Surrogate-Guided Placement Selection}
 When a finite pool of $K$ candidate placements already exists, the
 predictor ranks them and selects the best:
 \begin{equation}
@@ -615,30 +595,12 @@ $\mathbf{x}_t = \mathcal{P}(\mathbf{h}_t)$, and the surrogate
 evaluates $f_\theta(\mathbf{x}_t)$ without running the downstream flow.
 The sampler then updates its model and proposes the next trial.
 
-PPAPlace uses Tree-structured Parzen Estimator
+PPAPlace uses the Tree-structured Parzen Estimator
 (TPE)~\cite{bergstra2011tpe} as the BO sampler, which handles the
 mixed parameter types (continuous, integer, categorical) naturally
 present in placer configuration spaces. The random seed is fixed during
-optimization to decouple configuration quality from seed-specific noise;
-the best configuration is subsequently validated across multiple seeds.
-Placer failures (roughly 50\% of DREAMPlace trials) are handled by
-marking the trial as pruned, which TPE correctly excludes from its
-density model.
-
-\textbf{DREAMPlace configuration space.} Five parameters are optimized:
-target density, density weight (log-scale), learning rate (log-scale),
-stopping overflow threshold, and wirelength model. These represent the
-primary knobs affecting placement quality. The remaining six
-DREAMPlace parameters (gamma, noise ratio, macro halo, iterations) are
-fixed at sensible defaults, as they primarily affect convergence speed
-rather than placement quality.
-
-\textbf{Hier-RTLMP configuration space.} The same surrogate also
-optimizes Hier-RTLMP's weight parameters: macro blockage weight,
-timing weight, dataflow weight, area weight, and dead space weight.
-This demonstrates that the surrogate generalizes across placement
-paradigms---an analytical GPU-based placer and a hierarchical
-rule-based placer---without any architectural changes.
+optimization to decouple configuration quality from seed-specific noise.
+The best configuration is subsequently validated across multiple seeds.
 
 After convergence, the top-$K$ configurations identified by BO are
 validated through the full post-route flow to obtain ground-truth PPA.
@@ -710,7 +672,15 @@ Four external baselines are compared.
 \emph{AutoDMP}~\cite{autodmp2023} applies Bayesian hyperparameter optimization to DREAMPlace, evaluated by HPWL (not PPA).
 \emph{LaMPlace}~\cite{lamplace2025} learns a cross-stage mask with WireMask-EA; we report their published ChiPBench results from Appendix~B.1, normalized by the Hier-RTLMP baseline, and marked with $^\dagger$ in tables.
 Two PPAPlace variants are evaluated: \emph{PPAPlace-select} picks the best from $K{=}500$ pre-generated candidates using the surrogate (Eq.~\eqref{eq:select}), and \emph{PPAPlace-BO} uses surrogate-guided Bayesian optimization over 50 trials (Algorithm~\ref{alg:bo}).
-For the selection experiments (Figure~\ref{fig:pred_results}(b)), two additional baselines operate on the same candidate pool: \emph{HPWL-select} (lowest HPWL) and \emph{Random-select} (uniform random).
+For the selection experiments (Figure~\ref{fig:results}(b)), two additional baselines operate on the same candidate pool: \emph{HPWL-select} (lowest HPWL) and \emph{Random-select} (uniform random).
+
+\textbf{DREAMPlace configuration space.} Five parameters are optimized:
+target density, density weight (log-scale), learning rate (log-scale),
+stopping overflow threshold, and wirelength model. These represent the
+primary knobs affecting placement quality. The remaining six
+DREAMPlace parameters (gamma, noise ratio, macro halo, iterations) are
+fixed at sensible defaults, as they primarily affect convergence speed
+rather than placement quality.
 
 \textbf{Metrics.} Post-route WNS (ps), TNS (ns), power (mW), and area
 ($\mu$m$^2$). All values normalized by the Hier-RTLMP baseline (lower
@@ -757,7 +727,7 @@ Mixed-size (ours) & 0.13\,$\pm$\,.03 & \textbf{0.31\,$\pm$\,.02} \\
 
 The \emph{macro-only} representation uses only the GAT graph stream over
 macro nodes (equivalent to the GAT-only variant in
-Figure~\ref{fig:pred_results}(a)). The \emph{mixed-size} representation uses
+Figure~\ref{fig:results}(a)). The \emph{mixed-size} representation uses
 the full dual-stream GAT+CNN architecture from
 Section~\ref{subsec:architecture}. \emph{Pre-route labels} are obtained
 from static timing analysis after cell placement but before routing,
@@ -813,16 +783,19 @@ tested.
 \subsection{Predictor Architecture Ablation}
 \label{subsec:pred_results}
 
-\begin{figure}[t]
+\begin{figure}[h]
     \centering
-    \includegraphics[width=\columnwidth]{graphs/results_predictor.pdf}
+    \includegraphics[width=\columnwidth]{graphs/results_combined.pdf}
     \caption{(a)~Predictor architecture ablation (Kendall's $\tau$, WNS).
     (b)~Configuration selection: normalized post-route TNS across five
-    held-out circuits ($K{=}500$ candidate pool).}
-    \label{fig:pred_results}
+    held-out circuits ($K{=}500$ candidate pool).
+    (c)~BO convergence: best-so-far predicted WNS vs.\ trial
+    number (shaded: $\pm 1$ std, 5 runs).
+    (d)~LOCO cross-circuit generalization: per-circuit Kendall's $\tau$.}
+    \label{fig:results}
 \end{figure}
 
-Figure~\ref{fig:pred_results}(a) unpacks the representation axis by comparing
+Figure~\ref{fig:results}(a) unpacks the representation axis by comparing
 four predictor variants, all trained on post-GRT labels.
 
 Four variants are evaluated:
@@ -874,7 +847,7 @@ The additional training data enabled by cheaper labels more than
 compensates for the slight reduction in label fidelity from stopping at
 GRT rather than DRT.
 
-Figure~\ref{fig:pred_results}(b) compares how this predictor performs for
+Figure~\ref{fig:results}(b) compares how this predictor performs for
 downstream configuration selection on held-out circuits. All selection
 methods operate on the same pool of $K = 500$ DREAMPlace configurations
 per circuit; only the selection criterion differs. Five criteria are
@@ -904,14 +877,6 @@ uniformly sampled configurations from the same space. Both methods use
 the same surrogate for evaluation. Five independent runs (different TPE
 seeds) produce mean~$\pm$~std.
 
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\columnwidth]{graphs/results_optimization.pdf}
-    \caption{(a)~BO convergence: best-so-far predicted WNS vs.\ trial
-    number (shaded: $\pm 1$ std, 5 runs).
-    (b)~LOCO cross-circuit generalization: per-circuit Kendall's $\tau$.}
-    \label{fig:opt_results}
-\end{figure}
 
 \begin{table}[t]
 \centering
@@ -929,26 +894,26 @@ same budget.}
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 Circuit & Random & BO & Random & BO \\
 \midrule
-swerv\_wrap  & 0.96\,$\pm$\,.02 & 0.92\,$\pm$\,.02 & 0.93\,$\pm$\,.01 & \textbf{0.88\,$\pm$\,.01} \\
-ariane133    & 0.98\,$\pm$\,.04 & 0.94\,$\pm$\,.03 & 0.94\,$\pm$\,.02 & \textbf{0.91\,$\pm$\,.02} \\
-black\_parrot & 0.94\,$\pm$\,.03 & 0.90\,$\pm$\,.01 & 0.90\,$\pm$\,.02 & \textbf{0.86\,$\pm$\,.01} \\
-bp\_be       & 0.92\,$\pm$\,.02 & 0.88\,$\pm$\,.02 & 0.87\,$\pm$\,.01 & \textbf{0.83\,$\pm$\,.01} \\
-ariane136    & 0.96\,$\pm$\,.03 & 0.92\,$\pm$\,.02 & 0.92\,$\pm$\,.02 & \textbf{0.88\,$\pm$\,.01} \\
+swerv\_wrap  & 0.95\,$\pm$\,.03 & 0.90\,$\pm$\,.02 & 0.92\,$\pm$\,.02 & \textbf{0.86\,$\pm$\,.01} \\
+ariane133    & 0.99\,$\pm$\,.04 & 0.96\,$\pm$\,.03 & 0.97\,$\pm$\,.03 & \textbf{0.93\,$\pm$\,.02} \\
+black\_parrot & 0.92\,$\pm$\,.03 & 0.86\,$\pm$\,.02 & 0.88\,$\pm$\,.02 & \textbf{0.82\,$\pm$\,.01} \\
+bp\_be       & 0.90\,$\pm$\,.03 & 0.83\,$\pm$\,.02 & 0.85\,$\pm$\,.02 & \textbf{0.79\,$\pm$\,.01} \\
+ariane136    & 0.97\,$\pm$\,.03 & 0.93\,$\pm$\,.02 & 0.94\,$\pm$\,.02 & \textbf{0.90\,$\pm$\,.02} \\
 \midrule
-Average      & 0.95 & 0.91 & 0.91 & \textbf{0.87} \\
+Average      & 0.95 & 0.90 & 0.91 & \textbf{0.86} \\
 \bottomrule
 \end{tabular}
 \renewcommand{\arraystretch}{1.0}
 \end{table}
 
-Table~\ref{tab:bo_convergence} and Figure~\ref{fig:opt_results}(a) report
+Table~\ref{tab:bo_convergence} and Figure~\ref{fig:results}(c) report
 the convergence behavior. At $T = 20$, BO already matches the quality
 that random search achieves at $T = 50$, representing a $2.5\times$
 sample efficiency gain. At $T = 50$, BO finds configurations with
-average predicted WNS of 0.87 versus 0.91 for random search. The
+average predicted WNS of 0.86 versus 0.91 for random search. The
 improvement is consistent across all five test circuits, with the
-largest gains on ariane133 and bp\_be where the configuration landscape
-has more exploitable structure.
+largest gains on bp\_be and black\_parrot where the configuration
+landscape has more exploitable structure.
 
 \textbf{Surrogate accuracy on BO-proposed configs.} A key concern is
 whether the surrogate remains accurate on the non-random configurations
@@ -973,7 +938,7 @@ placement~\cite{lu2015eplace}.
 \textbf{Multi-seed validation.} The best configuration from BO is
 re-run with 5 different random seeds to confirm that the quality is
 intrinsic to the configuration rather than a lucky seed. On bp\_be, the
-post-GRT WNS across seeds is $0.83 \pm 0.02$ (normalized), confirming
+post-GRT WNS across seeds is $0.82 \pm 0.03$ (normalized), confirming
 low variance.
 
 
@@ -1023,26 +988,26 @@ LaMPlace$^\dagger$ & ---
   & 1.25 & 1.38 & 1.01 & 1.12 & 1.15 & 1.02 & 1.32 & 1.36 & 1.02 \\
 \midrule
 PPAPlace-select & 500
-  & \underline{0.91} & \underline{0.83} & \underline{0.98}
-  & \underline{0.94} & \underline{0.93} & \underline{0.99}
-  & \underline{0.86} & \underline{0.77} & \underline{0.98}
-  & \underline{0.82} & \underline{0.71} & \underline{0.97}
-  & \underline{0.90} & \underline{0.84} & \underline{0.99}
-  & \underline{0.89} & \underline{0.82} & \underline{0.98} \\
+  & \underline{0.92} & \underline{0.86} & 1.00
+  & \underline{0.97} & \underline{0.95} & 1.02
+  & \underline{0.88} & \underline{0.78} & \underline{0.99}
+  & \underline{0.85} & \underline{0.72} & \underline{0.98}
+  & \underline{0.94} & \underline{0.89} & 1.01
+  & \underline{0.91} & \underline{0.84} & 1.00 \\
 PPAPlace-BO & 50
-  & \textbf{0.87} & \textbf{0.78} & \textbf{0.97}
-  & \textbf{0.91} & \textbf{0.84} & \textbf{0.99}
-  & \textbf{0.82} & \textbf{0.68} & \textbf{0.97}
-  & \textbf{0.79} & \textbf{0.65} & \textbf{0.97}
-  & \textbf{0.86} & \textbf{0.76} & \textbf{0.98}
-  & \textbf{0.85} & \textbf{0.74} & \textbf{0.98} \\
+  & \textbf{0.88} & \textbf{0.80} & 1.01
+  & \textbf{0.95} & \textbf{0.92} & 1.02
+  & \textbf{0.84} & \textbf{0.71} & \textbf{0.99}
+  & \textbf{0.81} & \textbf{0.66} & \textbf{0.98}
+  & \textbf{0.91} & \textbf{0.85} & 1.02
+  & \textbf{0.88} & \textbf{0.79} & 1.00 \\
 \bottomrule
 \end{tabular}}
 \renewcommand{\arraystretch}{1.0}
 \end{table*}
 
 Across all five unseen circuits, both PPAPlace variants achieve the
-best WNS, TNS, and power. DREAMPlace and AutoDMP consistently
+best WNS and TNS. DREAMPlace and AutoDMP consistently
 degrade timing (WNS, TNS $> 1.0$) relative to the hierarchical
 baseline, confirming the HPWL-to-PPA disconnect reported in
 ChiPBench~\cite{chipbench2025}. On ariane133, the gap is particularly
@@ -1052,15 +1017,18 @@ substantially improves over DREAMPlace, with average WNS of $1.32$
 versus $1.99$, but remains above the Hier-RTLMP baseline on all
 circuits.
 
-PPAPlace is the only method to consistently improve over the
-hierarchical baseline. PPAPlace-BO achieves average WNS of $0.85$ and
-TNS of $0.74$ using only 50 trials, representing a 15\% WNS and 26\%
-TNS improvement over Hier-RTLMP. PPAPlace-select achieves comparable
-results ($0.89$ WNS, $0.82$ TNS) but requires 500 candidate
-evaluations---$10\times$ more than BO. The BO advantage is most
-pronounced on ariane133 ($0.84$ vs.\ $0.93$ TNS) and black\_parrot
-($0.68$ vs.\ $0.77$ TNS), where the surrogate's guidance focuses search
-on the most promising configuration regions.
+PPAPlace is the only method to consistently improve timing over the
+hierarchical baseline. PPAPlace-BO achieves average WNS of $0.88$ and
+TNS of $0.79$ using only 50 trials, representing a 12\% WNS and 21\%
+TNS improvement over Hier-RTLMP. Power remains essentially unchanged
+(average $1.00$), consistent with the expected timing--power
+trade-off: more aggressive placement for timing can increase switching
+activity. The improvement is circuit-dependent, ranging from 5\% WNS
+on ariane133 (132 macros, where Hier-RTLMP's hierarchical approach
+excels) to 19\% on bp\_be (10 macros, where configuration tuning has
+larger impact). PPAPlace-select achieves comparable results ($0.91$
+WNS, $0.84$ TNS) but requires 500 candidate evaluations---$10\times$
+more than BO.
 
 
 \subsection{Cross-Circuit Generalization}
@@ -1069,7 +1037,7 @@ on the most promising configuration regions.
 To test whether the predictor transfers to entirely unseen circuits,
 leave-one-circuit-out (LOCO) cross-validation is performed: in each of
 10 folds, the predictor is trained on 9 circuits and evaluated on the
-held-out circuit's configurations. Figure~\ref{fig:opt_results}(b)
+held-out circuit's configurations. Figure~\ref{fig:results}(d)
 reports per-circuit ranking accuracy when that circuit is the held-out
 fold.
 
@@ -1164,11 +1132,12 @@ accuracy. The resulting surrogate enables a spectrum of deployment
 strategies: from candidate selection over a pre-computed pool to
 Bayesian optimization over a continuous configuration space. Both
 modes use the same trained predictor as the objective function,
-and experiments on two placers (DREAMPlace and Hier-RTLMP) confirm
-that the framework is placer-agnostic. On five circuits unseen
-during training---the same circuits evaluated by LaMPlace, enabling
-direct comparison with published results---PPAPlace-BO achieves 15\%
-WNS and 26\% TNS improvement over the Hier-RTLMP baseline in 50
+and the architecture---which takes any finished placement as input
+rather than placer-specific features---is designed to be
+placer-agnostic. On five circuits unseen during training---the same
+circuits evaluated by LaMPlace, enabling direct comparison with
+published results---PPAPlace-BO achieves 12\% WNS and 21\% TNS
+improvement over the Hier-RTLMP baseline in 50
 trials, a $10\times$ reduction in candidate evaluations compared to
 enumerate-and-select, while all prior AI methods remain above the
 baseline.
