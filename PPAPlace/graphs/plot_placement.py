@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 """Visualize chip placements from DEF files — publication quality.
 
-Renders macros as labeled rectangles, std cells as a density heatmap.
-Produces a side-by-side comparison figure suitable for top-venue papers.
+Renders macros as colored rectangles, std cells as a density heatmap.
+Produces a side-by-side comparison of placement methods.
 """
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
 import numpy as np
 import re
-import json
 import os
 
 # ── Style ────────────────────────────────────────────────────
@@ -19,12 +17,12 @@ plt.rcParams.update({
     'font.family':       'serif',
     'font.serif':        ['Times New Roman', 'Times', 'DejaVu Serif'],
     'mathtext.fontset':  'stix',
-    'font.size':         8,
-    'axes.labelsize':    8,
-    'axes.titlesize':    9,
-    'xtick.labelsize':   7,
-    'ytick.labelsize':   7,
-    'legend.fontsize':   6.5,
+    'font.size':         10,
+    'axes.labelsize':    10,
+    'axes.titlesize':    11,
+    'xtick.labelsize':   9,
+    'ytick.labelsize':   9,
+    'legend.fontsize':   8,
     'figure.dpi':        300,
     'savefig.dpi':       300,
     'savefig.bbox':      'tight',
@@ -36,28 +34,70 @@ plt.rcParams.update({
 
 # Macro type → size in microns (from LEF)
 MACRO_SIZES = {
+    # ariane133
+    'fakeram45_256x16':  (77.710, 40.600),
+    # bp_fe / bp_be
     'fakeram45_512x64': (152.570, 113.400),
     'fakeram45_64x15':  (11.210,  58.800),
     'fakeram45_64x96':  (54.530,  89.400),
+    # swerv_wrapper
+    'fakeram45_2048x39': (206.910, 219.800),
+    'fakeram45_256x34':  (98.420,  65.800),
+    'fakeram45_64x21':   (15.770,  60.200),
+    # black_parrot
+    'fakeram45_256x95':  (77.710, 40.600),   # placeholder
+    'fakeram45_64x7':    (11.210, 30.800),    # placeholder
 }
 
-# Colors
-C_MACRO_FILL  = '#EE6677'   # Tol red
-C_MACRO_EDGE  = '#882255'   # dark magenta
-C_BG          = '#FFFFFF'
-C_DIE_EDGE    = '#333333'
+# Cell types that are macros (prefixes)
+MACRO_PREFIXES = ('fakeram45_', 'RAM16X1D', 'memMod_', 'spram_', 'memory_block_')
+
+# Per-type colors — Nature Reviews / ggsci palette (fill, edge)
+_NBLUE   = ('#3C5488', '#2A3C66')   # dark slate blue
+_NRED    = ('#E64B35', '#B33A29')   # vermillion
+_NTEAL   = ('#00A087', '#007A66')   # emerald teal
+_NPURPLE = ('#7E6148', '#5E4836')   # warm brown
+MACRO_TYPE_COLORS = {
+    'fakeram45_2048x39': _NBLUE,
+    'fakeram45_256x34':  _NRED,
+    'fakeram45_64x21':   _NTEAL,
+    'fakeram45_512x64':  _NBLUE,
+    'fakeram45_256x16':  _NBLUE,
+    'fakeram45_64x15':   _NTEAL,
+    'fakeram45_64x96':   _NRED,
+    'fakeram45_256x95':  _NPURPLE,
+    'fakeram45_64x7':    _NTEAL,
+}
+MACRO_DEFAULT_COLORS = ('#8C8C8C', '#5A5A5A')
+
+C_BG          = '#FAFAFA'
+C_DIE_EDGE    = '#1A1A1A'
+
+
+def is_macro_type(cell_type):
+    """Check if a cell type is a macro (not a standard cell)."""
+    return any(cell_type.startswith(p) for p in MACRO_PREFIXES)
 
 
 def parse_def(def_path):
-    """Parse a DEF file and return die area, macros, and std cell positions."""
+    """Parse a DEF file and return die area, macros, and std cell positions.
+
+    Handles both single-line and multi-line component formats:
+      Single: - inst_name cell_type + FIXED ( x y ) orient ;
+      Multi:  - inst_name cell_type
+              + PLACED ( x y ) orient ;
+    """
     die_area = None
     macros = []       # [(name, cell_type, x_um, y_um, orient)]
     stdcells = []     # [(x_um, y_um)]
     units = 1000      # DEF distance units per micron
 
+    # Regex for placement info anywhere in a line
+    place_re = re.compile(r'\+\s+(FIXED|PLACED)\s+\(\s*(\d+)\s+(\d+)\s*\)\s+(\w+)')
+
     with open(def_path, 'r') as f:
         in_components = False
-        prev_line = ''
+        pending_inst = None   # (inst_name, cell_type) waiting for placement
         for line in f:
             line = line.strip()
 
@@ -86,33 +126,44 @@ def parse_def(def_path):
                 continue
 
             if not in_components:
-                prev_line = line
                 continue
 
-            # Component definition line: "- inst_name cell_type"
+            # Component definition: "- inst_name cell_type [+ FIXED/PLACED ...]"
             if line.startswith('- '):
                 parts = line.split()
                 if len(parts) >= 3:
                     inst_name = parts[1]
                     cell_type = parts[2]
-                    prev_line = f'{inst_name}|{cell_type}'
+                    # Check if placement info is on the same line
+                    m_place = place_re.search(line)
+                    if m_place:
+                        x = int(m_place.group(2)) / units
+                        y = int(m_place.group(3)) / units
+                        orient = m_place.group(4)
+                        if is_macro_type(cell_type):
+                            macros.append((inst_name, cell_type, x, y, orient))
+                        else:
+                            stdcells.append((x, y))
+                        pending_inst = None
+                    else:
+                        pending_inst = (inst_name, cell_type)
                 continue
 
-            # Placement line: "+ FIXED ( x y ) orient ;" or "+ PLACED ( x y ) orient ;"
-            m_placed = re.match(r'\+ (FIXED|PLACED) \( (\d+) (\d+) \) (\w+)', line)
-            if m_placed and '|' in prev_line:
-                status = m_placed.group(1)
-                x = int(m_placed.group(2)) / units
-                y = int(m_placed.group(3)) / units
-                orient = m_placed.group(4)
-                inst_name, cell_type = prev_line.split('|', 1)
+            # Continuation line with placement info
+            if pending_inst is not None:
+                m_place = place_re.search(line)
+                if m_place:
+                    x = int(m_place.group(2)) / units
+                    y = int(m_place.group(3)) / units
+                    orient = m_place.group(4)
+                    inst_name, cell_type = pending_inst
+                    if is_macro_type(cell_type):
+                        macros.append((inst_name, cell_type, x, y, orient))
+                    else:
+                        stdcells.append((x, y))
+                    pending_inst = None
 
-                if status == 'FIXED':
-                    macros.append((inst_name, cell_type, x, y, orient))
-                else:
-                    stdcells.append((x, y))
-
-    return die_area, macros, np.array(stdcells), units
+    return die_area, macros, np.array(stdcells) if stdcells else np.empty((0, 2)), units
 
 
 def plot_placement(ax, def_path, title=None, subtitle=None,
@@ -126,47 +177,40 @@ def plot_placement(ax, def_path, title=None, subtitle=None,
     # White background
     ax.set_facecolor(C_BG)
 
-    # Std cell density heatmap
+    # Std cell density heatmap (subtle blue-grey)
     if len(stdcells) > 0:
         heatmap, xedges, yedges = np.histogram2d(
             stdcells[:, 0], stdcells[:, 1],
             bins=density_bins,
             range=[[xl, xh], [yl, yh]]
         )
-        # Normalize and apply colormap
-        heatmap = heatmap.T  # imshow expects (row, col)
+        heatmap = heatmap.T
+        # Clip top 1% to avoid hotspot saturation
+        vmax = np.percentile(heatmap[heatmap > 0], 99) if np.any(heatmap > 0) else 1
         ax.imshow(heatmap, origin='lower', extent=[xl, xh, yl, yh],
-                  cmap='Blues', alpha=0.6, aspect='equal',
+                  cmap='GnBu', alpha=0.55, aspect='equal', vmin=0, vmax=vmax,
                   interpolation='bilinear', zorder=1)
 
-    # Draw macros
-    patches = []
+    # Draw macros (color by type)
     for inst_name, cell_type, mx, my, orient in macros:
         if cell_type in MACRO_SIZES:
             mw, mh = MACRO_SIZES[cell_type]
         else:
-            mw, mh = 50, 50  # fallback
-        rect = mpatches.FancyBboxPatch(
+            mw, mh = 50, 50
+        if orient in ('E', 'W', 'FE', 'FW'):
+            mw, mh = mh, mw
+        fill_c, edge_c = MACRO_TYPE_COLORS.get(cell_type, MACRO_DEFAULT_COLORS)
+        rect = mpatches.Rectangle(
             (mx, my), mw, mh,
-            boxstyle='round,pad=0.5',
-            facecolor=C_MACRO_FILL, edgecolor=C_MACRO_EDGE,
-            linewidth=0.6, alpha=0.85, zorder=3
+            facecolor=fill_c, edgecolor=edge_c,
+            linewidth=0.5, alpha=0.92, zorder=3
         )
         ax.add_patch(rect)
-
-        if show_macro_labels:
-            # Short label: last component of hierarchical name
-            short = inst_name.split('/')[-1]
-            if len(short) > 10:
-                short = short[:8] + '..'
-            ax.text(mx + mw/2, my + mh/2, short,
-                    ha='center', va='center', fontsize=3,
-                    color='white', fontweight='bold', zorder=4)
 
     # Die outline
     die_rect = mpatches.Rectangle(
         (xl, yl), w_die, h_die,
-        fill=False, edgecolor=C_DIE_EDGE, linewidth=0.8, zorder=5
+        fill=False, edgecolor=C_DIE_EDGE, linewidth=1.0, zorder=5
     )
     ax.add_patch(die_rect)
 
@@ -179,70 +223,70 @@ def plot_placement(ax, def_path, title=None, subtitle=None,
         spine.set_visible(False)
 
     if title:
-        ax.set_title(title, fontsize=8, pad=4)
+        ax.set_title(title, fontsize=11, fontweight='bold', pad=6)
     if subtitle:
-        ax.text(0.5, -0.02, subtitle, transform=ax.transAxes,
-                ha='center', va='top', fontsize=6, color='#555555')
+        ax.text(0.5, -0.04, subtitle, transform=ax.transAxes,
+                ha='center', va='top', fontsize=7.5, color='#444444',
+                linespacing=1.4)
+
+    n_macros = len(macros)
+    n_std = len(stdcells)
+    print(f'  {title}: {n_macros} macros, {n_std:,} std cells')
+
+
+def _make_legend(ax):
+    """Add shared macro-type legend to an axes."""
+    from matplotlib.lines import Line2D
+    legend_items = [
+        mpatches.Patch(facecolor=_NBLUE[0], edgecolor=_NBLUE[1],
+                       linewidth=0.6, label='SRAM 2048\u00d739'),
+        mpatches.Patch(facecolor=_NRED[0], edgecolor=_NRED[1],
+                       linewidth=0.6, label='SRAM 256\u00d734'),
+        mpatches.Patch(facecolor=_NTEAL[0], edgecolor=_NTEAL[1],
+                       linewidth=0.6, label='SRAM 64\u00d721'),
+        Line2D([0], [0], marker='s', color='w',
+               markerfacecolor='#6BAED6', markersize=5,
+               label='Std cell density'),
+    ]
+    return legend_items
 
 
 def main():
-    """Generate placement comparison figure for bp_be."""
-    data_dir = 'E:/ChipSAT/dreamplace_data/bp_be'
-    grt_dir = os.path.join(data_dir, 'grt_jsons')
+    """Generate placement comparison figure for swerv_wrapper."""
+    data_dir = 'e:/ChipSAT/dreamplace_data/swerv_wrapper'
+    out_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # Find best and worst by WNS
-    import glob
-    results = []
-    for f in glob.glob(os.path.join(grt_dir, '*.json')):
-        with open(f) as fh:
-            d = json.load(fh)
-        wns = d['globalroute__timing__setup__ws']
-        tns = d['globalroute__timing__setup__tns']
-        power = d['globalroute__power__total']
-        name = os.path.basename(f).replace('dp_', '').replace('_grt.json', '')
-        results.append((name, wns, tns, power))
-
-    results.sort(key=lambda x: x[1])  # ascending WNS (most negative = worst)
-
-    worst = results[0]    # worst WNS
-    median_idx = len(results) // 2
-    median = results[median_idx]
-    best = results[-1]    # best WNS
-
-    picks = [
-        (worst, '(a) Poor config.'),
-        (median, '(b) Median config.'),
-        (best, '(c) Best config. (PPAPlace)'),
+    defs = [
+        # (path, title, subtitle with metrics)
+        (os.path.join(data_dir, 'swerv_rtlmp_placed.def'),
+         '(a) Hier-RTLMP',
+         'HPWL = 3.66\u00d710\u2076   mHPWL = 0.45\u00d710\u2076\nTNS = \u2212490   WNS = \u22120.57'),
+        (os.path.join(data_dir, 'cfg_default_final.def'),
+         '(b) DREAMPlace (default)',
+         'HPWL = 2.35\u00d710\u2076   mHPWL = 0.28\u00d710\u2076\nTNS = \u22121,067   WNS = \u22123.02'),
+        (os.path.join(data_dir, 'cfg_2109_final.def'),
+         '(c) PPASurrogate (best)',
+         'HPWL = 3.08\u00d710\u2076   mHPWL = 0.67\u00d710\u2076\nTNS = \u2212288   WNS = \u22120.48'),
     ]
 
-    fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.6))
+    fig, axes = plt.subplots(1, len(defs), figsize=(7.0, 3.2))
+    if len(defs) == 1:
+        axes = [axes]
 
-    for ax, ((name, wns, tns, power), title) in zip(axes, picks):
-        def_path = os.path.join(data_dir, f'{name}.def')
+    for ax, (def_path, title, subtitle) in zip(axes, defs):
         if not os.path.exists(def_path):
-            print(f'  [skip] {def_path} not found')
+            print(f'  [SKIP] {def_path} not found')
             continue
-        subtitle = f'WNS={wns:.0f}ps  TNS={tns:.0f}ns  Pwr={power:.3f}W'
         plot_placement(ax, def_path, title=title, subtitle=subtitle,
-                       show_macro_labels=True)
-        print(f'  Plotted {name}')
+                       density_bins=100)
 
-    # Legend
-    macro_patch = mpatches.Patch(facecolor=C_MACRO_FILL, edgecolor=C_MACRO_EDGE,
-                                 linewidth=0.6, label='Macros')
-    from matplotlib.lines import Line2D
-    cell_patch = Line2D([0], [0], marker='s', color='w',
-                        markerfacecolor='#4477AA', markersize=6,
-                        label='Std cell density')
-    fig.legend(handles=[macro_patch, cell_patch],
-               loc='lower center', ncol=2, frameon=True,
-               framealpha=0.95, edgecolor='#cccccc',
-               fontsize=7, bbox_to_anchor=(0.5, -0.02))
-
-    fig.tight_layout()
-    fig.savefig('placement_comparison.pdf')
+    fig.tight_layout(w_pad=0.5)
+    fig.subplots_adjust(bottom=0.13)
+    out_path = os.path.join(out_dir, 'placement_comparison.png')
+    fig.savefig(out_path, dpi=200)
+    fig.savefig(os.path.join(out_dir, 'placement_comparison.pdf'))
     plt.close(fig)
-    print('  placement_comparison.pdf')
+    print(f'  Saved: {out_path}')
 
 
 if __name__ == '__main__':

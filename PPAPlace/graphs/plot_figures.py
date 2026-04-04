@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Generate publication-quality figures for PPAPlace manuscript (ICCAD'26).
 
-Combined figure with four panels:
-(a) predictor ablation  (b) configuration selection
-(c) BO convergence      (d) cross-circuit LOCO
+Two figures:
+  results_ablation.pdf       — (a) predictor ablation, (b) configuration selection
+  results_generalization.pdf — (a) BO convergence, (b) cross-circuit LOCO
 """
 import matplotlib
 matplotlib.use('Agg')
@@ -16,12 +16,12 @@ plt.rcParams.update({
     'font.family':       'serif',
     'font.serif':        ['Times New Roman', 'Times', 'DejaVu Serif'],
     'mathtext.fontset':  'stix',
-    'font.size':         8,
-    'axes.labelsize':    8,
-    'axes.titlesize':    9,
-    'xtick.labelsize':   7,
-    'ytick.labelsize':   7,
-    'legend.fontsize':   6.5,
+    'font.size':         9,
+    'axes.labelsize':    9,
+    'axes.titlesize':    10,
+    'xtick.labelsize':   8,
+    'ytick.labelsize':   8,
+    'legend.fontsize':   7.5,
     'figure.dpi':        300,
     'savefig.dpi':       300,
     'savefig.bbox':      'tight',
@@ -62,20 +62,18 @@ def _style_ax(ax):
     ax.grid(axis='y', zorder=0)
 
 
-def plot_combined():
-    """Combined figure with 2x2 layout."""
+def plot_ablation():
+    """Figure: (a) predictor ablation, (b) configuration selection."""
 
-    fig = plt.figure(figsize=(7.0, 3.8))
-    gs = gridspec.GridSpec(2, 2, figure=fig,
+    fig = plt.figure(figsize=(7.0, 2.2))
+    gs = gridspec.GridSpec(1, 2, figure=fig,
                            width_ratios=[4, 6],
-                           height_ratios=[1, 1.2],
-                           wspace=0.35, hspace=0.65)
+                           wspace=0.35)
 
     # ── (a) Predictor Architecture Ablation ──────────────────
     ax_a = fig.add_subplot(gs[0, 0])
 
-    variants = ['Macro poly.', 'GAT only', 'CNN only',
-                'GAT+CNN (ours)']
+    variants = ['Macro\npoly.', 'GAT\nonly', 'CNN\nonly', 'GAT+CNN\n(ours)']
     tau = [0.11, 0.18, 0.22, 0.31]
     colors = [C['grey'], C['cyan'], C['blue'], C['red']]
 
@@ -84,15 +82,16 @@ def plot_combined():
     for bar, v in zip(bars, tau):
         ax_a.text(bar.get_x() + bar.get_width() / 2,
                   bar.get_height() + 0.008,
-                  f'{v:.2f}', ha='center', va='bottom', fontsize=7)
+                  f'{v:.2f}', ha='center', va='bottom', fontsize=8)
 
     ax_a.set_xticks(range(len(variants)))
-    ax_a.set_xticklabels(variants, fontsize=7)
+    ax_a.set_xticklabels(variants, fontsize=8, rotation=0, ha='center')
     ax_a.set_ylabel(r"Kendall's $\tau$ (WNS)")
     ax_a.set_ylim(0, 0.40)
     ax_a.yaxis.set_major_locator(plt.MultipleLocator(0.10))
     _style_ax(ax_a)
-    ax_a.set_title('(a) Predictor architecture ablation', fontsize=8, pad=4)
+    ax_a.set_title('(a) Predictor architecture ablation',
+                    fontsize=11, fontweight='bold', pad=4)
 
     # ── (b) Configuration Selection ──────────────────────────
     ax_b = fig.add_subplot(gs[0, 1])
@@ -120,27 +119,41 @@ def plot_combined():
 
     ax_b.axhline(y=1.0, color='#333333', linewidth=0.8, linestyle='--',
                  zorder=4)
-    ax_b.text(4.35, 1.04, 'Hier-RTLMP', fontsize=6,
+    ax_b.text(4.35, 1.04, 'Hier-RTLMP', fontsize=7,
               fontweight='bold', ha='center', va='bottom',
               color='#333333', zorder=6,
               bbox=dict(boxstyle='round,pad=0.08', facecolor='white',
                         edgecolor='none', alpha=1.0))
 
     ax_b.set_xticks(x)
-    ax_b.set_xticklabels(circuits, fontsize=7)
+    ax_b.set_xticklabels(circuits, fontsize=8)
     ax_b.set_ylabel('Norm. TNS (lower is better)')
     ax_b.set_ylim(0, 2.2)
     ax_b.yaxis.set_major_locator(plt.MultipleLocator(0.50))
     _style_ax(ax_b)
-    ax_b.legend(loc='upper center',
-                ncol=5, frameon=True, framealpha=0.95,
+    ax_b.legend(loc='upper right',
+                ncol=3, frameon=True, framealpha=0.95,
                 edgecolor='#cccccc', handlelength=0.8,
-                handletextpad=0.3, columnspacing=0.5, fontsize=6,
+                handletextpad=0.3, columnspacing=0.5, fontsize=7,
                 borderpad=0.2)
-    ax_b.set_title('(b) Configuration selection', fontsize=8, pad=4)
+    ax_b.set_title('(b) Configuration selection',
+                    fontsize=11, fontweight='bold', pad=4)
 
-    # ── (c) BO Convergence ───────────────────────────────────
-    ax_c = fig.add_subplot(gs[1, 0])
+    fig.savefig('results_ablation.pdf')
+    plt.close(fig)
+    print('  results_ablation.pdf')
+
+
+def plot_generalization():
+    """Figure: (a) BO convergence, (b) cross-circuit LOCO."""
+
+    fig = plt.figure(figsize=(7.0, 2.4))
+    gs = gridspec.GridSpec(1, 2, figure=fig,
+                           width_ratios=[4, 6],
+                           wspace=0.35)
+
+    # ── (a) BO Convergence ───────────────────────────────────
+    ax_c = fig.add_subplot(gs[0, 0])
 
     trials = np.arange(1, 51)
     np.random.seed(42)
@@ -184,7 +197,8 @@ def plot_combined():
     _style_ax(ax_c)
     ax_c.legend(loc='upper right', frameon=True, framealpha=0.9,
                 edgecolor='none', handlelength=1.0, handletextpad=0.3)
-    ax_c.set_title('(c) BO convergence', fontsize=8, pad=4)
+    ax_c.set_title('(a) BO convergence',
+                    fontsize=11, fontweight='bold', pad=4)
 
     # Annotate the 2.5x efficiency: BO@20 ≈ Random@50
     bo_at_20 = bo_mean[19]
@@ -192,10 +206,10 @@ def plot_combined():
               linestyle=':', linewidth=0.5, zorder=5)
     ax_c.annotate(r'BO@20 $\approx$ Rand@50',
                   xy=(35, bo_at_20 + 0.005), xytext=(35, bo_at_20 + 0.005),
-                  fontsize=6, ha='center', color=C['red'])
+                  fontsize=7, ha='center', color=C['red'])
 
-    # ── (d) Cross-Circuit Generalization (LOCO) ──────────────
-    ax_d = fig.add_subplot(gs[1, 1])
+    # ── (b) Cross-Circuit Generalization (LOCO) ──────────────
+    ax_d = fig.add_subplot(gs[0, 1])
 
     labels = ['bp_fe', 'bp_be12', 'isa_npu',
               'bp_multi', 'or1200', 'swerv43',
@@ -214,23 +228,24 @@ def plot_combined():
 
     ax_d.axhline(y=0, color='black', linewidth=0.3, zorder=1)
     ax_d.set_xticks(xc)
-    ax_d.set_xticklabels(labels, fontsize=6.5, rotation=30, ha='right')
+    ax_d.set_xticklabels(labels, fontsize=7.5, rotation=30, ha='right')
     ax_d.set_ylabel(r"Kendall's $\tau$")
     ax_d.set_ylim(0, 0.38)
     ax_d.yaxis.set_major_locator(plt.MultipleLocator(0.05))
     _style_ax(ax_d)
     ax_d.legend(loc='upper left', frameon=True, framealpha=0.9,
                 edgecolor='none', handlelength=0.8, handletextpad=0.3)
-    ax_d.set_title('(d) Cross-circuit generalization (LOCO)', fontsize=8,
-                    pad=4)
+    ax_d.set_title('(b) Cross-circuit generalization (LOCO)',
+                    fontsize=11, fontweight='bold', pad=4)
 
-    fig.savefig('results_combined.pdf')
+    fig.savefig('results_generalization.pdf')
     plt.close(fig)
-    print('  results_combined.pdf')
+    print('  results_generalization.pdf')
 
 
 # ── Main ──────────────────────────────────────────────────────
 if __name__ == '__main__':
     print('Generating figures …')
-    plot_combined()
+    plot_ablation()
+    plot_generalization()
     print('Done.')
