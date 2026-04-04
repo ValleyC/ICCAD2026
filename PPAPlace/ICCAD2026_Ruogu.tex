@@ -150,8 +150,6 @@ The contributions are as follows:
     \item A surrogate-guided configuration optimization framework that, unlike AutoDMP's post-placement proxies, provides routing-aware feedback directly within the BO loop. PPASurrogate-BO improves WNS by 12\% and TNS by 21\% over the hierarchical baseline in 50 trials. Because the predictor evaluates finished placements rather than placer internals, the same trained model transfers across placement paradigms: trained on DREAMPlace data, it ranks RTLMP placements with $\rho = 0.63$ without retraining---a capability no prior configuration optimizer supports.
 \end{enumerate}
 
-The remainder of this paper is organized as follows. Section~\ref{sec:related} reviews analytical, AI-based, and cross-stage prediction approaches to chip placement. Section~\ref{sec:prelim} formulates the cross-stage PPA prediction problem. Section~\ref{sec:label_fidelity} presents the label fidelity study that identifies post-global-routing as the most effective supervision stage. Section~\ref{sec:method} describes the PPASurrogate framework, including the mixed-size placement representation, the dual-stream predictor architecture, and the surrogate-guided configuration optimization mechanism. Section~\ref{sec:experiments} evaluates PPASurrogate on ChiPBench circuits through the full RTL-to-signoff flow. Section~\ref{sec:conclusion} concludes the paper.
-
 %% ============================================================
 \section{Related Work}
 \label{sec:related}
@@ -374,50 +372,19 @@ the ground truth throughout this analysis.
 
 \subsection{Stage-Wise Rank Correlation}
 
-Table~\ref{tab:rank_corr} reports the Spearman $\rho$ between WNS and
-TNS at each intermediate stage and the post-route ground truth,
-computed over the same set of placements per circuit.
-
-Circuits are ordered by macro count (10 to 132). HPWL shows near-zero
-correlation with post-route WNS across all circuits ($|\rho| < 0.22$),
-confirming its unreliability as a timing proxy. Post-CTS correlation is
-inconsistent: strongly positive for some circuits (bp\_be: $\rho =
-0.83$) but negative for others (ethernet: $\rho = -0.31$; swerv:
-$\rho = -0.12$). Post-GRT achieves consistently high correlation across
-all 10 circuits ($\rho \geq 0.78$), with no circuit showing the sign
-reversals observed at earlier stages. The pattern holds from the
-smallest design (bp\_be, 10 macros, $\rho = 0.80$) to the largest
-(ariane133, 132 macros, $\rho = 0.94$). GRT evaluation costs roughly
-one-sixth of full DRT across all circuits tested.
-
-Pre-CTS placement STA, the label source used by
-LaMPlace~\cite{lamplace2025}, shows a similar pattern to HPWL.
-Placement STA runs before clock tree synthesis: it estimates wire
-delays from placement coordinates via Steiner trees and assumes ideal
-zero-skew clocks. As Table~\ref{tab:rank_corr} shows, pre-CTS
-correlations are near-zero across all 10 circuits ($|\rho| \leq 0.22$),
-with mixed signs and no circuit reaching statistical significance.
-On bp\_fe, for example, $\rho = 0.09$ for WNS with $47.8\%$ of
-pairwise rankings reversed, statistically indistinguishable from random
-ordering. The gap between pre-CTS and post-GRT confirms that clock tree
-synthesis and routing estimation each contribute substantial information
-that placement STA alone cannot capture.
-
-\subsection{Implications}
-
-The pattern is consistent across 10 circuits spanning 10 to 132 macros,
-33K to 427K cells, and five design categories (CPUs, NPU,
-networking, DFT, display): post-GRT is the most cost-effective label
-stage for cross-stage PPA prediction, achieving $\rho \geq 0.78$ at
-roughly one-sixth the runtime of full detailed routing. Post-CTS labels
-show negative $\rho$ on 3 of 10 circuits (swerv, ethernet, and
-mor1kx for WNS), meaning they can reverse placement rankings and are
-unreliable for cross-stage supervision. Pre-CTS placement STA labels, as used by LaMPlace~\cite{lamplace2025},
-fare no better than HPWL: $|\rho| \leq 0.22$ on every circuit, with no
-statistically significant correlation on any design. While the severity
-may vary across technology nodes, these results demonstrate that
-validation against post-route outcomes is essential when choosing a
-label source for cross-stage prediction.
+Table~\ref{tab:rank_corr} reports Spearman $\rho$ between WNS/TNS at
+each intermediate stage and post-route ground truth. HPWL shows
+near-zero correlation across all circuits ($|\rho| < 0.22$). Post-CTS
+is inconsistent: strongly positive for some (bp\_be: $\rho = 0.83$) but
+negative for others (ethernet: $\rho = -0.31$). Post-GRT achieves
+$\rho \geq 0.78$ on all 10 circuits with no sign reversals, from the
+smallest design (bp\_be, 10 macros) to the largest (ariane133, 132
+macros), at roughly one-sixth the cost of full DRT. Pre-CTS placement
+STA---the label source used by LaMPlace~\cite{lamplace2025}---fares no
+better than HPWL: $|\rho| \leq 0.22$ on every circuit with no
+statistically significant correlation. Post-GRT is thus the most
+cost-effective supervision stage, while post-CTS labels show negative
+$\rho$ on 3 of 10 circuits and can reverse rankings.
 
 %% ============================================================
 \section{PPASurrogate}
@@ -888,28 +855,17 @@ optimization primarily redistributes cells to reduce critical-path
 delay, which does not significantly alter total switching activity.
 
 \textbf{Note on comparisons.} LaMPlace results ($^\dagger$) are from
-their published ChiPBench evaluation~\cite{lamplace2025}, which uses the
-same Nangate45 library and OpenROAD flow version. Both their results and
-ours are normalized by the same Hier-RTLMP baseline, making the ratios
-directly comparable. We verified the normalization by reproducing
-Hier-RTLMP results on two circuits (swerv\_wrapper and bp\_be) and
-confirming agreement within 2\%. Note that LaMPlace optimizes macro
-positions directly via evolutionary search, whereas PPASurrogate
-optimizes DREAMPlace's configuration parameters---these are
-complementary approaches operating on different search spaces.
-
-AutoDMP~\cite{autodmp2023} is not included in Table~\ref{tab:main}
-because it was evaluated on different benchmarks (TILOS) using a
-commercial EDA tool (Cadence Innovus), making PPA numbers
-incomparable. To enable a controlled comparison, we reproduce
-AutoDMP's core idea---BO with post-placement proxies---in our setup.
-The Proxy-BO baseline uses the same TPE search, the same 50-trial
-budget, and the same five-parameter DREAMPlace configuration space, but
-replaces the learned surrogate with AutoDMP's proxy metrics (HPWL,
-cell density, RUDY). The result ($1.10\times$ average WNS vs
-PPASurrogate-BO's $0.88\times$) quantifies the value of post-route
-surrogate guidance over post-placement proxies under otherwise
-identical conditions.
+their published ChiPBench evaluation~\cite{lamplace2025}, normalized by
+the same Hier-RTLMP baseline (verified within 2\% on two circuits).
+LaMPlace optimizes macro positions via evolutionary search, whereas
+PPASurrogate optimizes DREAMPlace configuration---complementary
+approaches on different search spaces.
+AutoDMP~\cite{autodmp2023} uses different benchmarks (TILOS) and a
+commercial tool (Cadence Innovus), so direct PPA comparison is
+infeasible. The Proxy-BO baseline reproduces AutoDMP's core
+idea---BO with HPWL, density, and RUDY proxies---under our setup; the
+gap ($1.10\times$ vs $0.88\times$ average WNS) quantifies the value of
+post-route surrogate guidance over post-placement proxies.
 
 \subsection{Bayesian Optimization Analysis}
 \label{subsec:bo_results}
