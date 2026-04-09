@@ -265,8 +265,8 @@ def main():
          '(b) DREAMPlace (default)',
          'HPWL = 2.35\u00d710\u2076   mHPWL = 0.28\u00d710\u2076\nTNS = \u22121,067   WNS = \u22123.02'),
         (os.path.join(data_dir, 'cfg_2109_final.def'),
-         '(c) PPASurrogate (best)',
-         'HPWL = 3.08\u00d710\u2076   mHPWL = 0.67\u00d710\u2076\nTNS = \u2212288   WNS = \u22120.48'),
+         '(c) PPAPlace-CoOpt+Refine',
+         'HPWL = 3.08\u00d710\u2076   mHPWL = 0.67\u00d710\u2076\nTNS = \u2212479   WNS = \u22120.57'),
     ]
 
     fig, axes = plt.subplots(1, len(defs), figsize=(7.0, 3.2))
