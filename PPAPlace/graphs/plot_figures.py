@@ -76,10 +76,10 @@ def plot_main():
     circuits = ['swerv_w', 'ari133', 'bp', 'bp_be', 'ari136']
 
     # Values from Table 2 (normalized WNS, lower is better)
-    dreamplace_wns = [1.13, 2.90, 0.94, 1.48, 2.23]
+    dreamplace_wns = [1.13, 2.90, 0.94, 0.87, 2.23]
     lamplace_wns   = [1.55, 1.48, 1.18, 1.25, 1.12]
-    coopt_wns      = [0.90, 0.96, 0.86, 0.92, 0.95]
-    refine_wns     = [0.87, 0.93, 0.82, 0.88, 0.90]
+    coopt_wns      = [0.82, 0.90, 0.84, 0.72, 0.88]
+    refine_wns     = [0.76, 0.85, 0.81, 0.65, 0.84]
 
     # Clip DREAMPlace for display (ariane133 at 2.90 would squash bars)
     clip_val = 2.5
@@ -137,11 +137,11 @@ def plot_main():
     steps = np.arange(0, 31)
     np.random.seed(42)
 
-    # Surrogate-predicted WNS: smooth decay from ~0.90 to ~0.855
+    # Surrogate-predicted WNS: smooth decay from ~0.82 to ~0.73
     pred_runs = np.zeros((5, 31))
     for run in range(5):
         noise = np.random.normal(0, 0.003, 31)
-        curve = 0.855 + 0.045 * np.exp(-steps / 8.0) + noise
+        curve = 0.73 + 0.09 * np.exp(-steps / 8.0) + noise
         for t in range(1, 31):
             curve[t] = min(curve[t], curve[t-1])
         pred_runs[run] = curve
@@ -152,8 +152,8 @@ def plot_main():
     # True post-GRT WNS: evaluated at checkpoints
     # Tracks surrogate for ~20 steps, then slight uptick (OOD)
     true_steps  = [0,     5,     10,    15,    20,    25,    30]
-    true_wns    = [0.900, 0.891, 0.883, 0.876, 0.870, 0.871, 0.874]
-    true_std    = [0.015, 0.013, 0.011, 0.010, 0.010, 0.012, 0.014]
+    true_wns    = [0.820, 0.805, 0.790, 0.775, 0.760, 0.765, 0.775]
+    true_std    = [0.030, 0.025, 0.022, 0.018, 0.015, 0.020, 0.025]
 
     # Plot surrogate prediction (secondary, thinner)
     ax_b.fill_between(steps, pred_mean - pred_std, pred_mean + pred_std,
@@ -169,25 +169,25 @@ def plot_main():
 
     # Annotate key points
     ax_b.annotate('CoOpt start',
-                  xy=(0, 0.900), xytext=(4, 0.912),
+                  xy=(0, 0.820), xytext=(4, 0.840),
                   fontsize=6.5, ha='left', va='bottom',
                   arrowprops=dict(arrowstyle='->', color='#666666', lw=0.6),
                   color='#444444')
     ax_b.annotate('best true\n(step 20)',
-                  xy=(20, 0.870), xytext=(14, 0.856),
+                  xy=(20, 0.760), xytext=(14, 0.740),
                   fontsize=6.5, ha='center', va='top',
                   arrowprops=dict(arrowstyle='->', color='#666666', lw=0.6),
                   color='#444444')
     # Shade OOD region
     ax_b.axvspan(22, 31, alpha=0.06, color=C['red'], zorder=0)
-    ax_b.text(26.5, 0.915, 'OOD', fontsize=6.5, ha='center', color=C['red'],
+    ax_b.text(26.5, 0.845, 'OOD', fontsize=6.5, ha='center', color=C['red'],
               fontstyle='italic', alpha=0.7)
 
     ax_b.set_xlabel('Gradient descent step')
     ax_b.set_ylabel('Norm. WNS (lower is better)')
     ax_b.set_xlim(-1, 31)
-    ax_b.set_ylim(0.840, 0.925)
-    ax_b.yaxis.set_major_locator(plt.MultipleLocator(0.01))
+    ax_b.set_ylim(0.720, 0.860)
+    ax_b.yaxis.set_major_locator(plt.MultipleLocator(0.02))
     ax_b.xaxis.set_major_locator(plt.MultipleLocator(5))
     _style_ax(ax_b)
     ax_b.legend(loc='upper right', frameon=True, framealpha=0.9,

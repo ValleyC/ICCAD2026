@@ -1,0 +1,71 @@
+Dear Dr. Ruogu Chen,
+
+  On behalf of the ICCAD Technical Program leadership team, I am writing
+to inform you that the ICCAD 2026 author rebuttal phase has now started.
+Please review the guidelines below carefully.
+
+1. Rebuttal Period:
+
+   The rebuttal phase started on June 10, 2026 at 11:59 PM AoE.
+
+   The original rebuttal deadline was June 17, 2026 at 11:59 PM AoE.
+However, due to the record number of submissions this year, several TPC
+members have been managing exceptionally heavy review loads, and some
+papers are still missing one or more reviews. We are actively following
+up with TPC members to ensure that the remaining reviews are uploaded by
+the end of this week.
+
+   To give authors sufficient time to review all available comments and
+prepare meaningful responses, we are extending the rebuttal deadline to
+June 20, 2026 at 11:59 PM AoE.
+
+2. Review Fields Visible to Authors:
+
+   During the rebuttal phase, authors will have visibility into the
+following review form fields:
+
+   1. Paper Summary
+   2. Strengths
+   3. Weaknesses
+   4. Comments to the Authors
+   5. Rebuttal Questions
+
+3. How to Submit Your Rebuttal:
+
+   Authors should visit the following page for instructions on how to
+respond to the reviewers’ questions:
+
+   https://iccad.com/2026/rebuttal-phase
+
+4. Scope of the Rebuttal:
+
+   The rebuttal is intended to clarify issues raised by the reviewers
+and to respond to their questions. Authors are not allowed to modify,
+revise, or resubmit the paper** during the rebuttal phase.
+
+   Please use the rebuttal response only to address reviewer concerns,
+correct misunderstandings, and provide clarifications where needed.
+
+5. Response Length:
+
+   The rebuttal response must not exceed 2,000 words.
+
+6. Review Status and Professionalism of Comments:
+
+   Please note that some reviews may not yet be final and may not have
+been fully reviewed or “sanitized” by the Technical Program Committee.
+Paper shepherds will continue to review and sanitize comments as needed.
+
+  We apologize in advance if any wording in the review comments appears
+unprofessional or insufficiently polished. We made the decision to share
+available reviews with authors early, despite this risk, so that authors
+would have as much time as possible to prepare meaningful rebuttal
+responses.
+
+  We greatly appreciate your patience and cooperation as we complete
+this important stage of the review process. Thank you for your
+contributions to ICCAD 2026.
+
+Best regards,
+Ismail Bustany
+Program Chair, ICCAD 2026

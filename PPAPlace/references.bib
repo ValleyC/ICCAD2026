@@ -55,13 +55,6 @@
   pages     = {149--157}
 }
 
-@article{dgreplace2024,
-  author    = {Andrew B. Kahng and others},
-  title     = {{DG-RePlAce}: A Dataflow-Driven {GPU}-Accelerated Analytical Global Placement Framework for Machine Learning Accelerators},
-  journal   = {arXiv preprint arXiv:2404.13049},
-  year      = {2024}
-}
-
 % ===== Reinforcement Learning for Chip Placement =====
 
 @article{mirhoseini2021graph,
@@ -84,15 +77,8 @@
   year      = {2024}
 }
 
-@article{markov2024falsedawn,
-  author    = {Igor L. Markov},
-  title     = {The False Dawn: Reevaluating {Google's} Reinforcement Learning for Chip Macro Placement},
-  journal   = {arXiv preprint arXiv:2306.09633v10},
-  year      = {2024}
-}
-
 @inproceedings{lai2022maskplace,
-  author    = {Yao Lai and Yongqi Mu and Ping Luo},
+  author    = {Yao Lai and Yao Mu and Ping Luo},
   title     = {{MaskPlace}: Fast Chip Placement via Reinforced Visual Representation Learning},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
   volume    = {35},
@@ -110,7 +96,7 @@
 }
 
 @inproceedings{shi2023wire,
-  author    = {Yunqi Shi and Ke Xue and Song Lei and Chao Qian},
+  author    = {Yunqi Shi and Ke Xue and Lei Song and Chao Qian},
   title     = {Macro Placement by Wire-Mask-Guided Black-Box Optimization},
   booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
   volume    = {36},
@@ -150,7 +136,7 @@
 }
 
 @inproceedings{macrorank2023,
-  author    = {Yifan Chen and Jing Mai and Xiaohan Gao and Muhan Zhang and David Z. Pan},
+  author    = {Yifan Chen and Jing Mai and Xiaohan Gao and Muhan Zhang and Yibo Lin},
   title     = {{MacroRank}: Ranking Macro Placement Solutions Leveraging Translation Equivariancy},
   booktitle = {Asia and South Pacific Design Automation Conference (ASP-DAC)},
   year      = {2023}
@@ -166,10 +152,25 @@
   year      = {2024}
 }
 
-@inproceedings{re2map2025,
-  author    = {Yunqi Shi and Xi Lin and Siyuan Xu and Shixiong Kai and Ke Xue and Mingxuan Yuan and Chao Qian and Zhi-Hua Zhou},
-  title     = {{ReMaP}: Macro Placement by Recursively Prototyping and Periphery-Guided Relocating},
-  booktitle = {Proceedings of the 62nd ACM/IEEE Design Automation Conference (DAC)},
+@article{re2map2025,
+  author    = {Yunqi Shi and Xi Lin and Zhiang Wang and Siyuan Xu and Shixiong Kai and Yao Lai and Chengrui Gao and Ke Xue and Mingxuan Yuan and Chao Qian and Zhi-Hua Zhou},
+  title     = {{Re$^2$MaP}: Macro Placement by Recursively Prototyping and Packing Tree-based Relocating},
+  journal   = {arXiv preprint arXiv:2511.08054},
+  year      = {2025}
+}
+
+@inproceedings{routeplacer2024,
+  author    = {Yunbo Hou and Haoran Ye and Yingxue Zhang and Siyuan Xu and Guojie Song},
+  title     = {{RoutePlacer}: An End-to-End Routability-Aware Placer with Graph Neural Network},
+  booktitle = {Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)},
+  year      = {2024},
+  pages     = {1085--1095}
+}
+
+@inproceedings{efficienttdp2025,
+  author    = {Yunqi Shi and Siyuan Xu and Shixiong Kai and Xi Lin and Ke Xue and Mingxuan Yuan and Chao Qian},
+  title     = {Timing-Driven Global Placement by Efficient Critical Path Extraction},
+  booktitle = {Design, Automation and Test in Europe Conference (DATE)},
   year      = {2025}
 }
 
@@ -276,16 +277,6 @@
   pages     = {1--6}
 }
 
-% ===== CP-SAT =====
-
-@misc{cpsat2023,
-  author    = {Laurent Perron and Fr\'{e}d\'{e}ric Didier},
-  title     = {{CP-SAT} Solver},
-  howpublished = {\url{https://developers.google.com/optimization/cp/cp_solver}},
-  year      = {2023},
-  note      = {Part of {Google OR-Tools}}
-}
-
 @article{hsu2013wa,
   author  = {Meng-Kai Hsu and Valeriy Balabanov and Yao-Wen Chang},
   title   = {{TSV}-Aware Analytical Placement for {3-D IC} Designs
@@ -298,22 +289,3 @@
   year    = {2013}
 }
 
-@article{nesterov1983method,
-  author  = {Yurii Nesterov},
-  title   = {A Method for Solving the Convex Programming Problem with
-             Convergence Rate {$O(1/k^2)$}},
-  journal = {Doklady Akademii Nauk SSSR},
-  volume  = {269},
-  number  = {3},
-  pages   = {543--547},
-  year    = {1983}
-}
-
-@inproceedings{bergstra2011tpe,
-  author    = {James Bergstra and R{\'e}mi Bardenet and Yoshua Bengio and Bal{\'a}zs K{\'e}gl},
-  title     = {Algorithms for Hyper-Parameter Optimization},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  volume    = {24},
-  year      = {2011},
-  pages     = {2546--2554}
-}
