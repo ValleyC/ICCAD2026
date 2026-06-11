@@ -76,21 +76,8 @@
 \begin{abstract}
 Macro placement significantly affects the chip's post-route performance,
 power, and area (PPA). Most placement methods optimize half-perimeter wirelength
-(HPWL) as the primary objective. However, recent benchmarking shows a near-zero correlation between
-HPWL and post-route timing metrics such as worst negative slack (WNS)
-and total negative slack (TNS). As a
-result, all evaluated artificial-intelligence (AI)-based placers in this benchmarking degrade PPA relative to a hierarchical
-baseline placer. Recent efforts have tried to train cross-stage predictors to close this
-gap. However, existing methods focus on macro-only representations and use pre-route metrics as training labels. This work conducts a training label fidelity study across ten circuits and four design flow stages, revealing that HPWL and pre-route timing are uninformative for predicting the final PPA. In contrast, post-global-routing achieves the best balance between final PPA fidelity and label generation cost-effectiveness. Based on this finding, this work proposes PPAPlace, a differentiable surrogate that predicts post-route PPA from the full mixed-size placement state. The surrogate is a dual-stream predictor that combines graph attention over the chip netlist with spatial convolution over the placement grid. It is trained on post-global-routing labels. The gradients of $\text{PPA}$ with respect to placement $\text{position}$ flow end-to-end from
-predicted PPA back to cell coordinates. PPAPlace exploits these
-gradients in two ways: as a co-objective injected into a differentiable analytical placer's
-analytical loop (PPAPlace-CoOpt), and as a post-placement refinement
-step that adjusts macro positions via projected gradient descent
-(PPAPlace-Refine). On five unseen ChiPBench circuits, PPAPlace
-improves average WNS and TNS by 22\% and 51\% over the hierarchical
-baseline, and the predictor
-transfers across unseen circuits without retraining.
-Code is available at \url{https://anonymous.4open.science/r/PPAPlace}.
+(HPWL) as the primary objective. However, recent benchmarking shows a near-zero correlation between HPWL and post-route timing metrics such as worst negative slack (WNS) and total negative slack (TNS). As a result, all evaluated artificial-intelligence (AI)-based placers in this benchmarking degrade PPA relative to a hierarchical baseline placer. Recent efforts have tried to train cross-stage predictors to close this gap. However, existing methods focus on macro-only representations and use pre-route metrics as training labels. This work conducts a training label fidelity study across ten circuits and four design flow stages, revealing that HPWL and pre-route timing are uninformative for predicting the final PPA. In contrast, post-global-routing achieves the best balance between final PPA fidelity and label generation cost-effectiveness. Based on this finding, this work proposes PPAPlace, a differentiable surrogate that predicts post-route PPA from the full mixed-size placement state. The surrogate is a dual-stream predictor that combines graph attention over the chip netlist with spatial convolution over the placement grid. It is trained on post-global-routing labels. The gradients of $\text{PPA}$ with respect to placement $\text{position}$ flow end-to-end from predicted PPA back to cell coordinates. PPAPlace exploits these gradients in two ways: as a co-objective injected into a differentiable analytical placer's analytical loop (PPAPlace-CoOpt), and as a post-placement refinement
+step that adjusts macro positions via projected gradient descent (PPAPlace-Refine). On five unseen ChiPBench circuits, PPAPlace improves average WNS and TNS by 22\% and 51\% over the hierarchical baseline, and the predictor transfers across unseen circuits without retraining. Code is available at \url{https://anonymous.4open.science/r/PPAPlace}.
 \end{abstract}
 
 \keywords{chip placement, PPA prediction, differentiable objectives, surrogate-guided optimization, graph attention network, physical design}
@@ -766,7 +753,7 @@ by randomizing 10 hyperparameters: target density
 $\in [0.70, 0.90]$, density weight $\in [10^{-5}, 10^{-3}]$
 (log-uniform), learning rate $\in [10^{-3}, 0.032]$ (log-uniform),
 gamma $\in [2, 10]$, stop overflow
-$\in \{0.05, 0.07, 0.10, 0.15\}$, wirelength model
+$\in \{0.05, 0.07, 0.10, 0.15\}$, wirelength model \\
 $\in \{\text{weighted-average}, \text{log-sum-exp}\}$, global-placement iterations
 $\in \{800, 1000, 1200, 1500\}$, macro halo $\in [0, 10]$ sites,
 noise ratio $\in [0.01, 0.05]$, and random seed $\in [1, 10^5]$.
