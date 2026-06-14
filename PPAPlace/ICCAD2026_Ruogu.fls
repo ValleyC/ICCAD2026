@@ -1,7 +1,0 @@
-PWD d:/Codes/DAC2026/ICCAD2026/PPAPlace
-INPUT c:/Users/Valley/AppData/Roaming/TinyTeX/texmf.cnf
-INPUT c:/Users/Valley/AppData/Roaming/TinyTeX/texmf-dist/web2c/texmf.cnf
-INPUT c:/Users/Valley/AppData/Roaming/TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT d:/Codes/DAC2026/ICCAD2026/PPAPlace/ICCAD2026_Ruogu.tex
-OUTPUT ICCAD2026_Ruogu.log
-INPUT c:/Users/Valley/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/xcolor/xcolor.sty
