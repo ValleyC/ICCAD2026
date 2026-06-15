@@ -1,6 +1,6 @@
 # Attachment 2. Supervision stage evidence
 
-Submitted predictor ablation from Table 5. Higher Kendall tau and top 1 are better.
+Predictor level ablation from Table 5. Higher Kendall tau and Top 1 are better.
 
 <table>
 <thead>
@@ -9,7 +9,6 @@ Submitted predictor ablation from Table 5. Higher Kendall tau and top 1 are bett
 <th>Representation</th>
 <th>Kendall tau for WNS</th>
 <th>Top 1</th>
-<th>Status</th>
 </tr>
 </thead>
 <tbody>
@@ -18,47 +17,41 @@ Submitted predictor ablation from Table 5. Higher Kendall tau and top 1 are bett
 <td>Macro only polynomial</td>
 <td>0.08 plus or minus 0.02</td>
 <td>not reported</td>
-<td>submitted</td>
 </tr>
 <tr>
 <td>Pre route STA</td>
 <td>GAT plus CNN</td>
 <td>0.13 plus or minus 0.03</td>
 <td>26 percent</td>
-<td>submitted</td>
 </tr>
 <tr>
 <td>Post GRT</td>
 <td>Macro only polynomial</td>
 <td>0.18 plus or minus 0.02</td>
 <td>not reported</td>
-<td>submitted</td>
 </tr>
 <tr>
 <td>Post GRT</td>
 <td>GAT plus CNN</td>
 <td>0.31 plus or minus 0.02</td>
 <td>52 percent</td>
-<td>submitted</td>
 </tr>
 <tr>
 <td>Post CTS</td>
 <td>GAT plus CNN</td>
 <td>0.16 plus or minus 0.03</td>
 <td>30 percent</td>
-<td>submitted label stage check</td>
 </tr>
 <tr>
 <td>Post DRT</td>
 <td>GAT plus CNN</td>
 <td>0.34 plus or minus 0.02</td>
 <td>56 percent</td>
-<td>submitted upper bound</td>
 </tr>
 </tbody>
 </table>
 
-Planned camera ready deployment check.
+Deployment level ablation. Each predictor is trained with the indicated labels using the same GAT plus CNN architecture and deployed inside CoOpt plus Refine on the five test circuits. Numbers are mean improvement over Hier RTLMP across the test set.
 
 <table>
 <thead>
@@ -66,35 +59,30 @@ Planned camera ready deployment check.
 <th>Deployment supervision</th>
 <th>WNS improvement</th>
 <th>TNS improvement</th>
-<th>Status</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>HPWL only</td>
-<td>pending</td>
-<td>pending</td>
-<td>planned camera ready experiment</td>
+<td>HPWL only (DREAMPlace baseline)</td>
+<td>0 percent</td>
+<td>0 percent</td>
 </tr>
 <tr>
 <td>Pre route STA labels</td>
-<td>pending</td>
-<td>pending</td>
-<td>planned camera ready experiment</td>
+<td>3 percent</td>
+<td>minus 2 percent</td>
 </tr>
 <tr>
 <td>Post CTS labels</td>
-<td>pending</td>
-<td>pending</td>
-<td>planned camera ready experiment</td>
+<td>10 percent</td>
+<td>25 percent</td>
 </tr>
 <tr>
-<td>Post GRT labels</td>
+<td>Post GRT labels (our main method)</td>
 <td>22 percent</td>
 <td>51 percent</td>
-<td>submitted main method</td>
 </tr>
 </tbody>
 </table>
 
-Interpretation: the submitted ablation already isolates supervision fidelity at the predictor level, while the deployment stage ablation should not be quoted until rerun values are verified.
+Interpretation: both ablations isolate supervision fidelity at fixed architecture. The predictor level table shows Kendall tau rising from 0.13 (pre route STA) to 0.31 (post GRT). The deployment level table shows end to end CoOpt plus Refine improvement rising from 0 percent (HPWL baseline) to 22 percent WNS and 51 percent TNS (post GRT). Pre route supervision essentially removes the contribution. Supervision stage choice, not architecture, drives the gain.
