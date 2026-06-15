@@ -38,7 +38,7 @@ We thank all four reviewers for the careful and constructive reading. The review
 
 ### Concern 1. Limited novelty and standard GNN plus CNN components
 
-R1 reads PPAPlace as objective augmentation rather than a replacement for the full placement optimizer. We agree with that category. Objective augmentation is a legitimate placement contribution path. DREAMPlace 4.0 adds timing net weighting [3]. RoutePlacer adds a learned routability objective [4]. PPAPlace follows this line, but changes the objective source. It uses a timing surrogate trained from the first flow stage that has measured rank fidelity to post DRT timing.
+R1 reads PPAPlace as objective augmentation rather than a replacement for the full placement optimizer. We agree with that category. Objective augmentation is a legitimate placement contribution path. DREAMPlace 4.0 adds timing net weighting [1]. RoutePlacer adds a learned routability objective [2]. PPAPlace follows this line, but changes the objective source. It uses a timing surrogate trained from the first flow stage that has measured rank fidelity to post DRT timing.
 
 The novelty is therefore not the GAT plus CNN architecture alone. The novelty is the combination below.
 
@@ -102,7 +102,7 @@ The submitted Table 5 already isolates supervision and representation. Higher Ke
 </tbody>
 </table>
 
-The same GAT plus CNN architecture rises from 0.13 with pre route STA labels to 0.31 with post GRT labels. This directly tests the supervision choice used by LaMPlace [2]. It shows that label fidelity, not architecture alone, is the main source of predictor improvement.
+The same GAT plus CNN architecture rises from 0.13 with pre route STA labels to 0.31 with post GRT labels. This directly tests the supervision choice used by LaMPlace [3]. It shows that label fidelity, not architecture alone, is the main source of predictor improvement.
 
 R1 also asks about final placement improvement under different supervision stages. We include the deployment level ablation below as additional rebuttal analysis. Each learned row uses the same GAT plus CNN architecture and the same CoOpt plus Refine deployment. Values report mean improvement over Hier RTLMP on the five held out test circuits.
 
@@ -319,7 +319,7 @@ The broad HPWL timing mismatch is not based only on our 10 circuits.
 </thead>
 <tbody>
 <tr>
-<td>ChiPBench [1]</td>
+<td>ChiPBench [4]</td>
 <td>20 circuits and six AI based placers</td>
 <td>MacroHPWL versus WNS</td>
 <td>Pearson correlation minus 0.08 in Figure 3</td>
@@ -440,22 +440,22 @@ The submitted Table 2 already marks where baseline values come from. We will mak
 <tbody>
 <tr>
 <td>DREAMPlace</td>
-<td>ChiPBench end to end evaluation [1]</td>
+<td>ChiPBench end to end evaluation [4]</td>
 <td>published value</td>
 </tr>
 <tr>
 <td>AutoDMP</td>
-<td>ChiPBench end to end evaluation [1]</td>
+<td>ChiPBench end to end evaluation [4]</td>
 <td>published value</td>
 </tr>
 <tr>
 <td>MaskRegulate</td>
-<td>ChiPBench end to end evaluation [1]</td>
+<td>ChiPBench end to end evaluation [4]</td>
 <td>published value</td>
 </tr>
 <tr>
 <td>LaMPlace</td>
-<td>LaMPlace paper [2]</td>
+<td>LaMPlace paper [3]</td>
 <td>published value</td>
 </tr>
 <tr>
@@ -500,12 +500,12 @@ We will reflect these clarifications in the camera ready manuscript while keepin
 
 ## References
 
-[1] Zhihai Wang, Zijie Geng, Zhaojie Tu, Jie Wang, Yuxi Qian, Zhexuan Xu, Ziyan Liu, Siyuan Xu, Zhentao Tang, Shixiong Kai, Mingxuan Yuan, Jianye Hao, Bin Li, Yongdong Zhang, and Feng Wu. "Benchmarking End To End Performance of AI Based Chip Placement Algorithms." arXiv:2407.15026, 2024. NeurIPS Datasets and Benchmarks Track, 2025.
+[1] Peiyu Liao, Siting Liu, Zhitang Chen, Wenlong Lv, Yibo Lin, and Bei Yu. "DREAMPlace 4.0: Timing Driven Global Placement with Momentum Based Net Weighting." Design, Automation and Test in Europe Conference, 2022, pages 939 to 944.
 
-[2] Zijie Geng, Jie Wang, Ziyan Liu, Siyuan Xu, Zhentao Tang, Shixiong Kai, Mingxuan Yuan, Jianye Hao, and Feng Wu. "LaMPlace: Learning to Optimize Cross Stage Metrics in Macro Placement." International Conference on Learning Representations, 2025.
+[2] Yunbo Hou, Haoran Ye, Yingxue Zhang, Siyuan Xu, and Guojie Song. "RoutePlacer: An End to End Routability Aware Placer with Graph Neural Network." Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, 2024, pages 1085 to 1095.
 
-[3] Peiyu Liao, Siting Liu, Zhitang Chen, Wenlong Lv, Yibo Lin, and Bei Yu. "DREAMPlace 4.0: Timing Driven Global Placement with Momentum Based Net Weighting." Design, Automation and Test in Europe Conference, 2022, pages 939 to 944.
+[3] Zijie Geng, Jie Wang, Ziyan Liu, Siyuan Xu, Zhentao Tang, Shixiong Kai, Mingxuan Yuan, Jianye Hao, and Feng Wu. "LaMPlace: Learning to Optimize Cross Stage Metrics in Macro Placement." International Conference on Learning Representations, 2025.
 
-[4] Yunbo Hou, Haoran Ye, Yingxue Zhang, Siyuan Xu, and Guojie Song. "RoutePlacer: An End to End Routability Aware Placer with Graph Neural Network." Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, 2024, pages 1085 to 1095.
+[4] Zhihai Wang, Zijie Geng, Zhaojie Tu, Jie Wang, Yuxi Qian, Zhexuan Xu, Ziyan Liu, Siyuan Xu, Zhentao Tang, Shixiong Kai, Mingxuan Yuan, Jianye Hao, Bin Li, Yongdong Zhang, and Feng Wu. "Benchmarking End To End Performance of AI Based Chip Placement Algorithms." arXiv:2407.15026, 2024. NeurIPS Datasets and Benchmarks Track, 2025.
 
 [5] Yunqi Shi, Xi Lin, Zhiang Wang, Siyuan Xu, Shixiong Kai, Yao Lai, Chengrui Gao, Ke Xue, Mingxuan Yuan, Chao Qian, and Zhi-Hua Zhou. "Re2MaP: Macro Placement by Recursively Prototyping and Packing Tree based Relocating." arXiv:2511.08054, 2025.
