@@ -69,3 +69,44 @@ contributions to ICCAD 2026.
 Best regards,
 Ismail Bustany
 Program Chair, ICCAD 2026
+
+
+Update:
+
+Dear Dr. Ruogu, Chen
+
+I would like to share several important updates regarding the rebuttal
+phase:
+
+1. In response to requests from several authors, we have increased the
+rebuttal word limit from 2,000 to 7,500 words.
+
+2. TPC members have been instructed not to search paper titles on arXiv
+or other public repositories while reviewing submissions. They have also
+been instructed that, if a submission is inadvertently found to have
+appeared on arXiv, this must not influence the review or decision
+process.
+
+3. We are still following up with a small number of delayed reviewers.
+We sincerely apologize to authors whose papers have not yet received the
+full set of reviews, and we are actively working to resolve this as
+quickly as possible.
+
+This is the first time ICCAD is conducting a formal rebuttal process,
+and it is a learning experience for all of us. We welcome your feedback
+as we work to make the process fair, constructive, and effective.
+
+Feel free to reach out to me (ismail.bustany@amd.com) with any questions
+or concerns.  Although I have been receiving an inordinate number of
+messages, I promise to address all of your messages either directly or
+through these updates.
+
+Best regards,
+Ismail Bustany
+Program Chair, ICCAD 2026
+https://iccad2026.hotcrp.com
+
+Link your paper:
+* Title: PPAPlace: Differentiable Cross-Stage Objectives for Chip
+  Placement Optimization
+* Site: https://iccad2026.hotcrp.com/paper/1192
