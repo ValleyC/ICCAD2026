@@ -6,26 +6,29 @@ We thank all four reviewers for the careful and constructive reading. Following 
 
 ### Concern 1. Limited novelty and objective augmentation
 
+We appreciate R1's focus on novelty because it helps separate architecture choice from the paper's technical contribution. 
 The contribution is not limited by using DREAMPlace as the optimization engine. Many placement advances change the objective optimized by an analytical placer. DREAMPlace 4.0 adds timing net weighting [1], and RoutePlacer adds a learned routability signal [2]. PPAPlace changes a different and central part of the problem: the timing supervision used to define the differentiable objective.
 
 A new GNN block is not the basis of the novelty. The submitted evidence shows that the label stage is decisive. Section 4 reports average Spearman rho 0.86 between post GRT and post DRT WNS, while HPWL and pre route STA are near zero. Table 5 then fixes the GAT plus CNN architecture and changes only the supervision stage. Kendall tau improves from 0.13 with pre route STA to 0.31 with post GRT. The novelty is therefore the fidelity validated supervision choice and its differentiable use in placement, not replacing the placement backbone.
 
 ### Concern 2. Does post GRT supervision specifically drive the gain?
 
+This is an important question, since the paper's claim depends on the supervision stage rather than the network block. 
 The submitted Table 5 isolates the supervision choice at fixed architecture. With the same GAT plus CNN model, pre route STA labels give Kendall tau 0.13 for WNS, post CTS gives 0.16, and post GRT gives 0.31. The same representation therefore improves substantially when the label stage is changed from pre route STA to post GRT. This directly tests the supervision choice used by LaMPlace [3] and shows that label fidelity, not architecture alone, drives predictor quality.
 
 ### Concern 3. Cross-design generalization and flow scope
 
-Generalization is evaluated at two levels. Ariane tests family-disjoint transfer within ChiPBench, where CoOpt plus Refine reaches 0.85 WNS and 0.62 TNS ratios. The new Superblue check keeps the submitted checkpoint fixed, uses no Superblue labels, and applies it directly to superblue16 and superblue18. Baseline rows are copied from LaMPlace Table 1 [3]. Units follow that table. Higher timing values are better.
+We appreciate this insightful generalization concern because it tests whether the method is tied to the original benchmark. 
+We have added a new generalization test on the Superblue circuit. We used the same PPAPlace checkpoint reported in the manuscript, and applied it directly to superblue16 and superblue18. Baseline rows are copied from LaMPlace Table 1 [3].
 
 <table>
 <thead>
 <tr>
 <th>Method</th>
-<th>SB16 WNS</th>
-<th>SB16 TNS</th>
-<th>SB18 WNS</th>
-<th>SB18 TNS</th>
+<th>SB16 WNS ns</th>
+<th>SB16 TNS ns</th>
+<th>SB18 WNS ns</th>
+<th>SB18 TNS ns</th>
 </tr>
 </thead>
 <tbody>
@@ -67,12 +70,12 @@ Generalization is evaluated at two levels. Ariane tests family-disjoint transfer
 </tbody>
 </table>
 
-The zero-shot ranking metrics are WNS rho [SB_WNS_RHO], TNS rho [SB_TNS_RHO], and top 5 [SB_TOP5] over [SB_N] placements. Superblue is a different benchmark and design distribution from the ChiPBench Nangate45 training set. Full multi-node validation still requires regenerated labels.
-
+The zero-shot ranking metrics are WNS rho [SB_WNS_RHO], TNS rho [SB_TNS_RHO], and top 5 [SB_TOP5] over [SB_N] placements. Superblue is a different benchmark and design distribution from the ChiPBench Nangate45 training set.
 ## Reviewer 2
 
 ### Concern 1. Same family test circuits may inflate the headline
 
+This is a useful question because it separates same family gains from family disjoint gains. 
 The submitted CoOpt plus Refine values from Table 2 give the requested lineage split for the 22 percent WNS and 51 percent TNS headline.
 
 <table>
@@ -120,10 +123,12 @@ The Refine-alone result on ariane133 is a distribution-gap case already discusse
 
 ### Concern 2. Refine and cross placer transfer
 
+We appreciate the distinction between Refine behavior and cross placer transfer. 
 Refine accepts legal DEF inputs, while learned ranking accuracy depends on placement distribution. The submitted Table 4 reports WNS rho 0.77 and Kendall tau 0.58 on held out DREAMPlace placements, with top 5 accuracy 68 percent. Direct transfer to RTLMP placements remains positive, with WNS rho 0.61 and TNS rho 0.56. The precise claim is input compatible, not placer independent. The 0.77 to 0.61 gap is therefore a distribution gap, not a failure to operate on other legal placements.
 
 ### Concern 3. PPA framing, confidence intervals, and Section 6.4 wording
 
+The metric framing and statistical clarity comments are helpful because they point to the exact wording that should be used. 
 The correct framing is timing driven placement with preserved power and routability. Area is fixed by the floorplan. Power varies weakly. In the submitted results, power remains 0.99 to 1.02 times baseline, post DRT reports have zero DRC violations, and routed wirelength remains within 3 percent of default. The central claim is post route WNS and TNS improvement, with power and routability reported as preservation metrics.
 
 The 20 configurations per circuit are controlled sweeps of placement quality, not random samples from all possible placements. Bootstrap intervals are not quoted in the rebuttal because interval widths must be verified from the logs. Section 6.4 evaluates surrogate ranking accuracy across placers, not flow stage fidelity across placers.
@@ -132,6 +137,7 @@ The 20 configurations per circuit are controlled sweeps of placement quality, no
 
 ### Concern 1. Is the HPWL timing mismatch based only on 10 designs?
 
+We appreciate R3's HPWL question because it lets us distinguish external benchmark evidence from our controlled stage study. 
 The broad HPWL timing mismatch is not based only on our 10 circuits.
 
 <table>
@@ -169,6 +175,7 @@ ChiPBench supplies the broader benchmark evidence. PPAPlace supplies the control
 
 ### Concern 2. Congestion and overfitting
 
+The congestion and overfitting questions are important because a timing gain must survive detailed routing and held out ranking tests. 
 The submitted manuscript already includes three safeguards against a low congestion artifact. RUDY congestion is an input channel to the surrogate. All main timing values are measured after detailed routing. Submitted post DRT reports show zero DRC violations and routed wirelength within 3 percent of default. Together these rule out a routability artifact in the main result. Peak RUDY and global route overflow are the appropriate per circuit summaries after verification from OpenROAD logs.
 
 On overfitting, the strongest submitted evidence is broader than the five final placements. The predictor ranks 500 held out DREAMPlace placements per test circuit, with average WNS rho 0.77, Kendall tau 0.58, and top 5 accuracy 68 percent. It also transfers to RTLMP placements with WNS rho 0.61. These tests include unseen family Ariane circuits and cross placer inputs. In the final placement results, the Ariane group improves WNS by 15 percent and TNS by 38 percent.
@@ -177,10 +184,12 @@ On overfitting, the strongest submitted evidence is broader than the five final 
 
 ### Concern 1. Offline label cost and industrial practicality
 
+R4's practical cost question is important for deployment. 
 The label fidelity study is a standalone contribution. In the submitted setup, post GRT costs 0.20 hours per sample on average, while post DRT costs 3.7 hours per sample. Generating the 5000 label corpus takes about 63 hours wall clock with parallel OpenROAD evaluation, and model training takes about 45 minutes. Post GRT labels are therefore an offline cost that is amortized across later uses of the trained surrogate. Deployment uses the trained model without rerunning post GRT during optimization. The R1 Superblue table gives the cross-benchmark transfer check. Broader node or library generalization still requires regenerated labels in those environments.
 
 ### Concern 2. Baseline provenance, failure cases, and sensitivity
 
+We appreciate the request for clearer provenance and sensitivity evidence. 
 The submitted Table 2 already marks baseline provenance. DREAMPlace, AutoDMP, and MaskRegulate are from ChiPBench [4]. LaMPlace is from its paper [3]. Re2MaP ratios are computed from published results [5]. PPAPlace rows are our runs with mean and standard deviation over three seeds. This provenance is therefore traceable, and variance is reported only for rows we reran.
 
 The submitted paper also includes lambda and refinement step sweeps, gradient alignment against true post GRT perturbations, the Refine alone result on ariane133, and the smaller gain on ariane136. These are concrete failure-case and sensitivity evidence. No training-label-count sensitivity claim is made before it is computed.
