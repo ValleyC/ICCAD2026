@@ -110,3 +110,24 @@ Link your paper:
 * Title: PPAPlace: Differentiable Cross-Stage Objectives for Chip
   Placement Optimization
 * Site: https://iccad2026.hotcrp.com/paper/1192
+
+Update:
+
+Dear  Dr. Ruogu Chen
+
+We would like to clarify that rebuttal responses should focus on
+addressing the specific questions and concerns raised by the reviewers.
+The rebuttal is not intended for rewriting the paper, introducing major
+new material, nor responding to every review comment.
+
+Although we have received many requests to increase the word limit,
+please restrict your responses  to the original 2,000-word limit.  It
+was a mistake on my part to increase it.  Longer responses actually will
+WEAKEN your rebuttals since they make it extremely difficult for
+reviewers to meaningfully evaluate them in this short time span we have.
+
+Thank you for your cooperation.
+
+Best regards,
+Ismail Bustany
+Program Chair, ICCAD 2026
